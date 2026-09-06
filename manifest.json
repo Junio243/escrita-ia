@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Escrita IA",
+  "version": "2.1.1",
+  "description": "Assistente de escrita com provedores compatíveis com OpenAI, sugestões e correções nos campos do navegador.",
+  "minimum_chrome_version": "112",
+  "permissions": ["storage", "activeTab", "scripting"],
+  "host_permissions": ["https://*/*", "http://*/*", "file:///*"],
+  "content_scripts": [{"matches": ["https://*/*", "http://*/*", "file:///*"], "js": ["engine.js", "fields.js", "panel.js", "content.js"], "run_at": "document_idle", "all_frames": true, "match_about_blank": true, "match_origin_as_fallback": true}],
+  "icons": {"16":"icons/icon16.png","32":"icons/icon32.png","48":"icons/icon48.png","128":"icons/icon128.png"},
+  "background": {"service_worker": "background.js", "type": "module"},
+  "action": {"default_popup": "popup.html", "default_title": "Escrita IA", "default_icon":{"16":"icons/icon16.png","32":"icons/icon32.png"}},
+  "options_page": "options.html"
+}

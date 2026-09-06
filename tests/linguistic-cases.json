@@ -1,0 +1,20 @@
+{
+  "note": "Corpus de avaliação linguística. Os testes offline validam transporte e localização; qualidade linguística exige execução real com IA e revisão humana.",
+  "cases": [
+    {"language":"pt-BR","category":"grammar","bad":"Nós vai amanhã.","good":"Nós vamos amanhã."},
+    {"language":"pt-BR","category":"grammar","bad":"As menina chegaram.","good":"As meninas chegaram."},
+    {"language":"pt-BR","category":"grammar","bad":"Refiro-me aquela proposta.","good":"Refiro-me àquela proposta."},
+    {"language":"pt-BR","category":"punctuation","bad":"Os alunos, chegaram cedo.","good":"Os alunos chegaram cedo."},
+    {"language":"pt-BR","category":"spelling","bad":"Voce tem uma ideia otima.","good":"Você tem uma ideia ótima."},
+    {"language":"pt-BR","category":"typography","bad":"Um  texto simples.","good":"Um texto simples."},
+    {"language":"pt-BR","category":"style","bad":"Vamos subir para cima.","good":"Vamos subir."},
+    {"language":"pt-BR","category":"tone","bad":"Prezada diretoria, esse troço ficou zoado.","good":"Prezada diretoria, o resultado precisa de ajustes."},
+    {"language":"pt-PT","good":"Estou a trabalhar no projeto."},
+    {"language":"pt-BR","good":"Estou trabalhando no projeto."},
+    {"language":"en-US","good":"The color of the theater is gray."},
+    {"language":"en-GB","good":"The colour of the theatre is grey."}
+  ],
+  "samples": {
+    "es":"Este es un texto de prueba.","fr":"Ceci est un texte de test.","de":"Dies ist ein Testtext.","it":"Questo è un testo di prova.","nl":"Dit is een testtekst.","ca":"Aquest és un text de prova.","gl":"Este é un texto de proba.","eu":"Hau probako testu bat da.","da":"Dette er en testtekst.","sv":"Detta är en testtext.","nb":"Dette er en testtekst.","fi":"Tämä on testiteksti.","pl":"To jest tekst testowy.","cs":"Toto je zkušební text.","sk":"Toto je skúšobný text.","sl":"To je preizkusno besedilo.","hr":"Ovo je probni tekst.","sr":"Ово је пробни текст.","ro":"Acesta este un text de test.","hu":"Ez egy tesztszöveg.","el":"Αυτό είναι ένα δοκιμαστικό κείμενο.","tr":"Bu bir test metnidir.","ru":"Это тестовый текст.","uk":"Це тестовий текст.","bg":"Това е тестов текст.","ar":"هذا نص تجريبي.","he":"זהו טקסט לבדיקה.","hi":"यह एक परीक्षण पाठ है।","ja":"これはテスト用の文章です。","ko":"이것은 테스트 문장입니다.","zh":"这是一段测试文本。","id":"Ini adalah teks uji."
+  }
+}
