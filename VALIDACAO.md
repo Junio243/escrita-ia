@@ -6,6 +6,8 @@ Data: 25 de setembro de 2026.
 
 Redesign do Estúdio: exemplos de contexto com recuperação do rascunho, cópia via clipboard e alternativa quando a permissão falha, persistência somente do tema, ausência de persistência dos textos, modo foco com isolamento do restante da página e ciclo de Tab/Shift+Tab, saída por botão/Esc, FAQ expansível e respeito à preferência por movimento reduzido. Fluxos cobertos pelo teste de navegador. Capturas atualizadas nos temas claro/escuro e no celular.
 
+Evolução do editor: painel lateral, grifos de repetições/espaços com texto seguro, filtros com contagens, localização da ocorrência inclusive em textos com rolagem e limpeza reversível. Testes verificam a seleção exata, atualização dos grifos após aplicar/desfazer, filtro sem ocorrências e ausência de overflow entre 320 e 1440 px. Nenhuma integração ou transmissão de texto ao LanguageTool foi adicionada.
+
 - 31 testes locais aprovados com `npm test`.
 - `npm run build:site` gera a página estática usando o mesmo motor local da extensão.
 - `npm run test:site` aprovado em Chrome: correções por clique, desfazer, invalidação de desfazer após edição manual, restauração do exemplo, texto vazio, Unicode, conteúdo HTML tratado como texto, navegação por teclado e ausência de overflow em 320, 390, 768 e 1440 px.

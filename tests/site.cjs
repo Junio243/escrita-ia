@@ -68,6 +68,55 @@ const types = {
     await page.goto(`http://127.0.0.1:${server.address().port}/escrita-ia/`);
     const writing = page.locator("#writing");
     const original = await writing.inputValue();
+    assert.equal(await page.locator("#highlight-text mark").count(), 2);
+    await page.getByRole("button", { name: /^Repetições/ }).click();
+    assert.equal(await page.locator(".suggestion").count(), 1);
+    assert.equal(
+      await page.locator(".suggestion").getAttribute("data-category"),
+      "grammar",
+    );
+    await page
+      .getByRole("button", { name: /Localizar: Palavra duplicada/ })
+      .click();
+    assert.equal(
+      await writing.evaluate((el) =>
+        el.value.slice(el.selectionStart, el.selectionEnd),
+      ),
+      "Quero quero",
+    );
+    await page.getByRole("button", { name: /^Espaços/ }).click();
+    assert.equal(
+      await page.locator(".suggestion").getAttribute("data-category"),
+      "typography",
+    );
+    await page
+      .getByRole("button", { name: /Aplicar: Espaçamento duplicado/ })
+      .click();
+    assert.equal(await page.locator("#empty-state").isVisible(), true);
+    assert.equal(await page.locator("#highlight-text mark").count(), 1);
+    await page.getByRole("button", { name: "Desfazer", exact: true }).click();
+    await page.getByRole("button", { name: /^Todas/ }).click();
+    await page.getByRole("button", { name: "Limpar texto" }).click();
+    assert.equal(await writing.inputValue(), "");
+    assert.equal(await page.locator("#highlight-text mark").count(), 0);
+    await page.getByRole("button", { name: "Desfazer", exact: true }).click();
+    assert.equal(await writing.inputValue(), original);
+    await writing.fill("linha de contexto\n".repeat(60) + "teste teste");
+    await page
+      .getByRole("button", { name: /Localizar: Palavra duplicada/ })
+      .click();
+    assert(await writing.evaluate((el) => el.scrollTop > 0));
+    assert.equal(
+      await writing.evaluate((el) =>
+        el.value.slice(el.selectionStart, el.selectionEnd),
+      ),
+      "teste teste",
+    );
+    await page.getByRole("button", { name: "Restaurar exemplo" }).click();
+    await page.reload();
+    console.log(
+      "PASS inline highlights, category filters, locate including long text, clear and undo",
+    );
     assert.equal(await page.locator(".suggestion").count(), 2);
     assert.equal(await page.locator("#undo").isDisabled(), true);
     await page
@@ -176,7 +225,7 @@ const types = {
     await page.getByRole("button", { name: "Ativar modo foco" }).click();
     assert.equal(await page.getByRole("dialog").count(), 1);
     assert.equal(await page.locator("header").evaluate((el) => el.inert), true);
-    await page.locator("#copy").focus();
+    await page.locator("#extension-link").focus();
     await page.keyboard.press("Tab");
     assert.equal(
       await page
@@ -187,7 +236,7 @@ const types = {
     await page.keyboard.press("Shift+Tab");
     assert.equal(
       await page
-        .locator("#copy")
+        .locator("#extension-link")
         .evaluate((el) => el === document.activeElement),
       true,
     );
@@ -217,6 +266,10 @@ const types = {
       await page.screenshot({
         path: process.env.SCREENSHOT_PATH,
         fullPage: true,
+      });
+    if (process.env.SCREENSHOT_PATH)
+      await page.screenshot({
+        path: process.env.SCREENSHOT_PATH.replace(".png", "-editor.png"),
       });
     for (const width of [1440, 768, 390, 320]) {
       await page.setViewportSize({ width, height: 900 });
@@ -258,7 +311,8 @@ const types = {
     );
     assert.equal(
       await page
-        .locator(".hero-star")
+        .locator(".suggestion")
+        .first()
         .evaluate((el) => getComputedStyle(el).animationName),
       "none",
     );

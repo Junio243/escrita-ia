@@ -11,6 +11,8 @@ Extensão para Google Chrome que revisa ortografia, gramática, pontuação, est
 
 O novo **Estúdio de escrita** tem exemplos de ideia, e-mail, trabalho e redes sociais, tema claro/escuro, modo foco (saída com `Esc`), contagem de palavras, estimativa de leitura e cópia do texto. Ao trocar um exemplo, **Desfazer** recupera o rascunho anterior. Apenas a preferência de tema é salva; o texto não persiste ao recarregar a página.
 
+A apresentação prioriza o editor, com painel lateral, destaques diretamente no texto e filtros por repetições ou espaços duplicados. **Ver no texto** seleciona a ocorrência; **Limpar texto** permite recomeçar e recuperar o conteúdo com **Desfazer**. A organização visual tem como referência o [LanguageTool](https://languagetool.org/pt-BR), com identidade, implementação e regras próprias da Escrita IA.
+
 [![Prévia da demonstração Escrita IA](docs/screenshots/demo.png)](https://Junio243.github.io/escrita-ia/)
 
 [Visualizar tema escuro](docs/screenshots/demo-dark.png) · [Visualizar no celular](docs/screenshots/demo-mobile.png)
