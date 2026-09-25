@@ -1,7 +1,57 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Escrita IA</title><link rel="stylesheet" href="ui.css"></head><body>
-<header><img src="icons/icon48.png" alt=""><div><div class="eyebrow">ASSISTENTE DE ESCRITA</div><h1>Escrita IA</h1></div></header>
-<section class="hero"><h2>É só começar a escrever.</h2><p>Erros grifados, explicações claras e sugestões que respeitam sua voz.</p></section>
-<label class="check"><input id="site" type="checkbox">Ativar neste site</label><small id="origin"></small>
-<section><h2>Diagnóstico</h2><dl id="diagnostic" class="diagnostic"></dl><button id="retry">Verificar e reconectar</button></section>
-<div id="status" role="status"></div><button class="primary" id="settings">Abrir configurações</button>
-<script src="popup.js"></script></body></html>
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>Escrita IA · Central</title>
+    <link rel="stylesheet" href="ui.css" />
+  </head>
+  <body class="popup">
+    <header>
+      <div class="brand-icon">e<span>✦</span></div>
+      <div>
+        <div class="eyebrow">SEU ESTÚDIO DE ESCRITA</div>
+        <h1>Escrita IA <span class="version">3.0</span></h1>
+      </div>
+    </header>
+    <section class="hero">
+      <div class="eyebrow">SEU PRÓXIMO BOM TEXTO</div>
+      <h2 id="headline">Vamos escrever melhor.</h2>
+      <p id="summary">
+        Revisão no seu campo de texto. Você escolhe o que aplicar.
+      </p>
+      <div class="shortcut">
+        <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>E</kbd
+        ><span>abrir painel</span>
+      </div>
+    </section>
+    <section class="control-card">
+      <label class="switch-row"
+        ><span
+          ><strong>Assistente ativo</strong
+          ><small>Pausar ou retomar em todos os sites</small></span
+        ><input id="enabled" type="checkbox" role="switch" /></label
+      ><label class="switch-row"
+        ><span
+          ><strong>Revisar neste site</strong
+          ><small id="origin">Identificando a página…</small></span
+        ><input id="site" type="checkbox" role="switch"
+      /></label>
+    </section>
+    <div class="stats">
+      <div><strong id="analyses">0</strong><span>Análises</span></div>
+      <div><strong id="findings">0</strong><span>Ocorrências</span></div>
+      <div><strong id="applied">0</strong><span>Aplicadas</span></div>
+    </div>
+    <p class="caption">Nesta sessão do serviço de fundo</p>
+    <div id="status" role="status" aria-live="polite"></div>
+    <button class="primary full" id="settings">
+      Personalizar meu assistente <span>↗</span>
+    </button>
+    <details>
+      <summary>Conexão e diagnóstico</summary>
+      <dl id="diagnostic" class="diagnostic"></dl>
+      <button id="retry" class="full">Verificar e reconectar</button>
+    </details>
+    <script src="popup.js"></script>
+  </body>
+</html>

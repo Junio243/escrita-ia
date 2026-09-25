@@ -24,3 +24,5 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Browser demo tests
         run: npm run test:site
+      - name: Real extension browser tests
+        run: npm run test:browser

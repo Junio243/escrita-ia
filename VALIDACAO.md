@@ -1,6 +1,14 @@
-# Relatório de validação — Escrita IA 2.2.0
+# Relatório de validação — Escrita IA 3.0.0
 
 Data: 25 de setembro de 2026.
+
+## Extensão 3.0: mudanças reais e validação
+
+O painel injetado (`panel.js` e `content.js`), o popup e as configurações foram redesenhados. Os testes carregam a extensão real com manifesto, serviço de fundo e scripts de conteúdo em um perfil Chrome isolado.
+
+Novas regressões cobertas: passar o mouse não abre o painel, fixar/soltar, fechar com Esc, aplicar correções locais em lote e desfazer, ocultar desfazer após edição manual, gerar novamente sem duplicar alternativas, reescrever o campo inteiro, predefinições de provedor, mostrar/ocultar somente a chave digitada, pausa global pelo popup e painel dentro da tela em 390 px. Os fluxos anteriores de revisão, dicionário, seleção, segurança de senha, cancelamento, CSP Trusted Types, temas, iframes e editores ricos continuam cobertos.
+
+O teste de integração também é executado pelo CI, além dos testes da página de demonstração. As imagens `extension*.png` são capturas da extensão real nos testes, com respostas de IA simuladas. Não houve chamada com chave real nem validação em sessões autenticadas de sites externos.
 
 ## Demonstração pública e nova execução de testes
 

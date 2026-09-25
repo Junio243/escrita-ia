@@ -7,6 +7,23 @@
 
 Extensão para Google Chrome que revisa ortografia, gramática, pontuação, estilo e tom diretamente nos campos de texto do navegador. As ocorrências são grifadas durante a digitação e nenhuma alteração é aplicada sem o clique do usuário.
 
+## Extensão 3.0 — Estúdio de escrita
+
+Esta versão muda a extensão instalada no Chrome: painel, popup e configurações.
+
+- Painel com abas **Revisão** e **Reescrita**, filtros por categoria, indicador compacto e opção de fixar o painel no canto da tela.
+- Grifos abrem sugestões por clique; passar o mouse não abre mais o painel. `Esc` fecha a revisão.
+- **Aplicar correções locais** reúne ajustes não sobrepostos em uma alteração reversível. Revisões por IA continuam sendo aplicadas individualmente.
+- Reescrita de seleção ou **Usar campo inteiro**, com até 6.000 caracteres. Gerar novamente substitui as alternativas anteriores.
+- Popup com pausa global, controle por site e estatísticas da sessão. Configuração preenchida não é apresentada como conexão testada.
+- Configurações organizadas por seção, predefinições de provedor e exibição opcional apenas da chave digitada. A chave armazenada nunca é preenchida no formulário.
+
+![Extensão real: painel de revisão 3.0](docs/screenshots/extension.png)
+
+[Popup](docs/screenshots/extension-popup.png) · [Configurações](docs/screenshots/extension-settings.png) · [Reescrita](docs/screenshots/extension-rewrite.png)
+
+**Atualizar a extensão instalada:** substitua os arquivos na pasta que você já carregou, abra `chrome://extensions`, clique em **Recarregar** na Escrita IA e atualize as abas em que vai escrever. Atualizar apenas o site do GitHub Pages não atualiza a extensão. Evite instalar duas cópias ao mesmo tempo.
+
 **[Abrir demonstração interativa](https://Junio243.github.io/escrita-ia/)** · [Baixar extensão](https://github.com/Junio243/escrita-ia/archive/refs/heads/main.zip)
 
 O novo **Estúdio de escrita** tem exemplos de ideia, e-mail, trabalho e redes sociais, tema claro/escuro, modo foco (saída com `Esc`), contagem de palavras, estimativa de leitura e cópia do texto. Ao trocar um exemplo, **Desfazer** recupera o rascunho anterior. Apenas a preferência de tema é salva; o texto não persiste ao recarregar a página.
@@ -112,6 +129,6 @@ As regras de retenção, privacidade e cobrança dependem do provedor escolhido.
 
 ## Versão
 
-Versão atual: **2.2.0**.
+Versão atual: **3.0.0**.
 
 Consulte [LEIA-ME.md](LEIA-ME.md) para instruções completas e [VALIDACAO.md](VALIDACAO.md) para os resultados de validação.

@@ -1,9 +1,195 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Escrita IA · Configurações</title><link rel="stylesheet" href="ui.css"></head><body class="options">
-<header><img src="icons/icon128.png" alt=""><div><div class="eyebrow">ESCRITA IA 2.2.0</div><h1>Suas palavras. Sua voz.</h1></div></header>
-<section class="hero"><h2>Escreva com confiança</h2><p>A revisão aparece no campo enquanto você escreve. Você decide quais sugestões aplicar.</p></section>
-<form id="form"><section><h2>Provedor compatível com OpenAI</h2><label for="providerUrl">URL da API</label><input id="providerUrl" type="text" inputmode="url" value="https://api.openai.com/v1" required placeholder="https://provedor.com/v1"><small>Aceita uma URL base ou um endpoint terminado em <code>/responses</code> ou <code>/chat/completions</code>. HTTP somente em localhost.</small><label for="providerFormat">Formato da API</label><select id="providerFormat"><option value="auto">Detectar automaticamente</option><option value="responses">Responses API</option><option value="chat">Chat Completions</option></select><label for="key">Chave da API</label><input id="key" type="password" autocomplete="off" placeholder="Opcional para servidores locais"><label class="check"><input id="remember" type="checkbox" checked>Lembrar chave neste navegador</label><small>A chave salva fica apenas no perfil local, sem sincronização. Desmarque para mantê-la somente durante a sessão.</small><label for="model">Nome do modelo</label><input id="model" value="gpt-4.1-mini" required><small>Digite exatamente o identificador usado pelo provedor.</small><div class="row"><button type="button" id="test">Salvar e testar conexão</button><button type="button" id="forget">Apagar chave</button></div><small>No modo automático, provedores externos tentam primeiro Chat Completions; a OpenAI oficial tenta primeiro Responses. Formatos incompatíveis podem gerar tentativas adicionais.</small></section>
-<section><h2>Seu jeito de revisar</h2><label class="check"><input id="enabled" type="checkbox" checked>Ativar automaticamente nos sites permitidos</label><label for="language">Idioma e variante</label><select id="language"></select><label class="check"><input id="picky" type="checkbox">Modo Exigente</label><small>Acrescenta recomendações de rigor estilístico para textos formais.</small><label for="theme">Aparência</label><select id="theme"><option value="system">Seguir o sistema</option><option value="light">Clara</option><option value="dark">Escura</option></select><small>A análise é automática. Toda substituição exige seu clique.</small></section><button class="primary" type="submit">Salvar preferências</button></form>
-<div id="status" role="status" aria-live="polite"></div>
-<section><h2>Dicionário pessoal</h2><p>Nomes, siglas e termos que você quer manter.</p><label for="dictLanguage">Idioma do termo</label><select id="dictLanguage"></select><label for="word">Novo termo</label><input id="word" maxlength="100" placeholder="Ex.: nome da sua empresa"><div class="row"><button id="add">Adicionar termo</button></div><div id="terms"></div></section>
-<section><h2>Privacidade e compatibilidade</h2><p>O campo ativo é enviado à URL configurada após uma pausa. Você pode pausar por site no ícone da extensão. As chamadas podem gerar cobranças. A extensão não guarda histórico de textos. Em provedores diferentes da OpenAI, retenção e privacidade seguem as regras desse provedor.</p><p>O assistente atende campos HTML e editores editáveis comuns. Editores especiais, páginas internas do Chrome e áreas protegidas podem não permitir integração. Use o diagnóstico no ícone se o indicador não aparecer.</p><a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer">Criar chave oficial da OpenAI</a></section>
-<script src="engine.js"></script><script type="module" src="options.js"></script></body></html>
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Escrita IA · Seu espaço de trabalho</title>
+    <link rel="stylesheet" href="ui.css" />
+  </head>
+  <body class="options">
+    <div class="options-header">
+      <header>
+        <div class="brand-icon">e<span>✦</span></div>
+        <div>
+          <div class="eyebrow">ESCRITA IA · ESTÚDIO 3.0</div>
+          <h1>Um assistente do seu jeito.</h1>
+        </div>
+      </header>
+      <p>Suas palavras. Suas escolhas.</p>
+    </div>
+    <div class="settings-layout">
+      <nav class="settings-nav" aria-label="Seções de configurações">
+        <a href="#connection">01 · Conexão com IA</a
+        ><a href="#preferences">02 · Experiência de revisão</a
+        ><a href="#dictionary">03 · Dicionário pessoal</a
+        ><a href="#privacy">04 · Privacidade</a>
+        <div class="nav-note">
+          Abra o painel no campo ativo com
+          <strong>Alt + Shift + E</strong>.<br /><br />Revisões locais funcionam
+          mesmo sem um provedor de IA.
+        </div>
+      </nav>
+      <main class="settings-content">
+        <form id="form">
+          <section id="connection">
+            <div class="section-label">01 / CONEXÃO</div>
+            <h2>Escolha a inteligência por trás das ideias.</h2>
+            <p class="section-description">
+              Conecte um serviço compatível com OpenAI. Sua chave fica no perfil
+              do Chrome e nunca é exibida nas páginas.
+            </p>
+            <div class="preset-row">
+              <button type="button" id="preset-openai">OpenAI</button
+              ><button type="button" id="preset-local">Servidor local</button>
+            </div>
+            <label for="providerUrl">URL da API</label
+            ><input
+              id="providerUrl"
+              type="text"
+              inputmode="url"
+              value="https://api.openai.com/v1"
+              required
+              placeholder="https://provedor.com/v1"
+            /><small
+              >URL base ou endpoint /responses ou /chat/completions. HTTP é
+              aceito somente em localhost.</small
+            >
+            <div class="field-grid">
+              <div>
+                <label for="model">Nome exato do modelo</label
+                ><input
+                  id="model"
+                  value="gpt-4.1-mini"
+                  required
+                  placeholder="Identificador fornecido pelo seu provedor"
+                />
+              </div>
+              <div>
+                <label for="providerFormat">Formato da API</label
+                ><select id="providerFormat">
+                  <option value="auto">Detectar automaticamente</option>
+                  <option value="responses">Responses API</option>
+                  <option value="chat">Chat Completions</option>
+                </select>
+              </div>
+            </div>
+            <label for="key">Chave da API</label>
+            <div class="secret-row">
+              <input
+                id="key"
+                type="password"
+                autocomplete="off"
+                placeholder="Deixe vazio para manter a chave atual"
+              /><button
+                type="button"
+                id="show-key"
+                aria-label="Mostrar chave digitada"
+                aria-pressed="false"
+              >
+                Mostrar
+              </button>
+            </div>
+            <small id="credential-state">Verificando configuração…</small
+            ><label class="check"
+              ><input id="remember" type="checkbox" checked />Lembrar chave
+              neste navegador</label
+            ><small
+              >Desmarque para manter a chave somente durante a sessão.
+              Servidores locais podem funcionar sem chave.</small
+            >
+            <div class="row">
+              <button type="button" id="test" class="primary">
+                Salvar e testar conexão</button
+              ><button type="button" id="forget">Apagar chave</button>
+            </div>
+          </section>
+          <section id="preferences">
+            <div class="section-label">02 / EXPERIÊNCIA</div>
+            <h2>Encontre seu ritmo de escrita.</h2>
+            <label class="check"
+              ><input id="enabled" type="checkbox" checked />Revisar
+              automaticamente nos sites permitidos</label
+            >
+            <div class="field-grid">
+              <div>
+                <label for="language">Idioma e variante</label
+                ><select id="language"></select>
+              </div>
+              <div>
+                <label for="theme">Aparência</label
+                ><select id="theme">
+                  <option value="system">Seguir o sistema</option>
+                  <option value="light">Clara</option>
+                  <option value="dark">Escura</option>
+                </select>
+              </div>
+            </div>
+            <label class="check"
+              ><input id="picky" type="checkbox" />Modo Exigente para escrita
+              formal</label
+            ><small
+              >Inclui recomendações de estilo mais rigorosas. Toda correção
+              continua dependendo do seu clique.</small
+            >
+          </section>
+          <div class="save-bar">
+            <span>Você continua no controle de cada palavra.</span
+            ><button class="primary" type="submit" id="save">
+              Salvar preferências
+            </button>
+          </div>
+        </form>
+        <div id="status" role="status" aria-live="polite"></div>
+        <section id="dictionary">
+          <div class="section-label">03 / DICIONÁRIO</div>
+          <h2>Palavras que fazem parte de você.</h2>
+          <p class="section-description">
+            Nomes, siglas e termos especiais. Seu dicionário respeita cada
+            idioma.
+          </p>
+          <div class="field-grid">
+            <div>
+              <label for="dictLanguage">Idioma do termo</label
+              ><select id="dictLanguage"></select>
+            </div>
+            <div>
+              <label for="word">Novo termo</label
+              ><input
+                id="word"
+                maxlength="100"
+                placeholder="Ex.: nome da sua empresa"
+              />
+            </div>
+          </div>
+          <div class="row">
+            <button id="add" type="button">Adicionar termo</button>
+          </div>
+          <div id="terms"></div>
+        </section>
+        <section id="privacy">
+          <div class="section-label">04 / TRANSPARÊNCIA</div>
+          <h2>Sua escrita merece cuidado.</h2>
+          <p class="section-description">
+            O campo ativo é enviado ao provedor configurado após uma pausa.
+            Pause a revisão por site ou globalmente no ícone da extensão. As
+            chamadas podem ter custos e seguem as regras de privacidade do
+            provedor. Não guardamos histórico persistente dos textos.
+          </p>
+          <p class="section-description">
+            Campos HTML e editores comuns são compatíveis. Páginas internas do
+            Chrome, editores em canvas e áreas protegidas podem impedir a
+            integração. O diagnóstico no popup ajuda a identificar o problema.
+          </p>
+          <a
+            href="https://platform.openai.com/api-keys"
+            target="_blank"
+            rel="noreferrer"
+            >Gerenciar chaves da OpenAI ↗</a
+          >
+        </section>
+      </main>
+    </div>
+    <script src="engine.js"></script>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>
