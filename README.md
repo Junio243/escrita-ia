@@ -7,6 +7,10 @@
 
 Extensão para Google Chrome que revisa ortografia, gramática, pontuação, estilo e tom diretamente nos campos de texto do navegador. As ocorrências são grifadas durante a digitação e nenhuma alteração é aplicada sem o clique do usuário.
 
+**[Abrir demonstração interativa](https://Junio243.github.io/escrita-ia/)** · [Baixar extensão](https://github.com/Junio243/escrita-ia/archive/refs/heads/main.zip)
+
+[![Prévia da demonstração Escrita IA](docs/screenshots/demo.png)](https://Junio243.github.io/escrita-ia/)
+
 ## Recursos
 
 - Análise automática após 600 ms sem digitação.
@@ -55,11 +59,32 @@ Requer Node.js para executar os testes locais:
 npm test
 ```
 
+Para construir e testar a demonstração em navegador:
+
+```bash
+npm ci
+npx playwright install chromium
+npm run build:site
+npm run test:site
+```
+
+O site está em `site/`; o build copia o motor real de regras locais (`engine.js`) e os ícones para `dist-site/`. Os testes usam um servidor temporário no caminho `/escrita-ia/`, verificam aplicação e desfazer, edição manual, texto vazio, Unicode, conteúdo HTML, navegação por teclado e layouts entre 320 e 1440 px. Não há chamadas de IA na demonstração.
+
+Para o teste da extensão real, execute `npm run test:browser`. Ele usa Chrome instalado em `C:/Program Files/Google/Chrome/Application/chrome.exe`; configure `CHROME_PATH` para outro caminho. As respostas da IA são simuladas e o perfil de teste fica em `work/`, ignorado pelo Git.
+
+### Publicação no GitHub Pages
+
+O workflow `Deploy GitHub Pages` executa os testes, constrói apenas o site e publica a demonstração após alterações em `main`. O repositório deve ter **Settings → Pages → Source → GitHub Actions** habilitado. Pull requests passam pelo CI sem publicar. Veja a [documentação oficial dos workflows do Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
+
 A suíte cobre análise, reescrita, Unicode, dicionário, cache, cancelamento, segurança de credenciais, atalho de teclado, estatísticas da sessão e os transportes Responses e Chat Completions. O teste de navegador em `tests/browser.cjs` usa Playwright e carrega a extensão real em um perfil isolado do Chrome.
 
 ## Demonstração
 
-> Coloque aqui um GIF ou prints: `docs/demo.gif`, `docs/painel.png`, `docs/configuracoes.png`.
+Experimente as regras de palavras e espaços duplicados na [demonstração pública](https://Junio243.github.io/escrita-ia/). A página explica a instalação e permite aplicar sugestões e desfazer a última alteração. A revisão completa por IA requer a extensão e um provedor configurado.
+
+Extensão real no Chrome, com respostas de IA simuladas no teste de integração:
+
+![Painel da extensão com sugestão de acentuação](docs/screenshots/extension.png)
 
 ## Arquivos importantes
 

@@ -2,6 +2,18 @@
 
 Data: 25 de setembro de 2026.
 
+## Demonstração pública e nova execução de testes
+
+- 31 testes locais aprovados com `npm test`.
+- `npm run build:site` gera a página estática usando o mesmo motor local da extensão.
+- `npm run test:site` aprovado em Chrome: correções por clique, desfazer, invalidação de desfazer após edição manual, restauração do exemplo, texto vazio, Unicode, conteúdo HTML tratado como texto, navegação por teclado e ausência de overflow em 320, 390, 768 e 1440 px.
+- O teste serve a página em `/escrita-ia/`, confirmando caminhos relativos compatíveis com GitHub Pages, ausência de respostas HTTP com erro, exceções de JavaScript e solicitações externas.
+- `npm run test:browser` repetido com a extensão real: análise, aplicação, desfazer, dicionário, reescrita, cancelamento, senha excluída, campos dinâmicos, iframe herdado, erro de API, pausa, configurações, tema, Unicode, zoom, quebra de linha e os cinco adaptadores sintéticos aprovados.
+- Capturas reais desta execução estão em `docs/screenshots/`.
+- Playwright agora é uma dependência de desenvolvimento fixada e com lockfile. CI valida a demonstração em Chromium; a publicação só ocorre depois dos testes.
+
+As chamadas de IA continuam simuladas. Não houve validação com credenciais reais nem publicação de mensagens nos sites integrados. A demonstração pública usa apenas regras locais, sem enviar o conteúdo digitado.
+
 ## Novidades da 2.2.0
 
 - Atalho `Alt+Shift+E` (`commands` no manifesto) que alterna o painel no campo ativo; o serviço de fundo encaminha o comando à aba ativa e o script de conteúdo alterna o painel.

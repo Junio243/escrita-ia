@@ -18,3 +18,8 @@ jobs:
         run: node -e "const m=require('./manifest.json'); for (const k of ['manifest_version','name','version','background','content_scripts']) { if (!m[k]) throw new Error('manifest: missing '+k); } console.log('manifest', m.version, 'ok');"
       - name: Tests
         run: npm test
+      - run: npm ci
+      - run: npm run build:site
+      - run: npx playwright install --with-deps chromium
+      - name: Browser demo tests
+        run: npm run test:site
