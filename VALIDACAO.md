@@ -2,6 +2,10 @@
 
 Data: 25 de setembro de 2026.
 
+## Correção 3.0.1 — Google AI Studio
+
+34 testes locais aprovados, incluindo normalização das URLs do Google, seleção exclusiva de Chat Completions mesmo com preferência antiga de Responses, envio da chave somente ao provedor vinculado, bloqueio sem chave e preservação dos erros de modelo/cota/permissão. A predefinição Google AI Studio é exercitada no teste da extensão real. Chamadas ao Gemini são simuladas; a conexão com o modelo e a chave do usuário deve ser confirmada em Salvar e testar conexão.
+
 ## Extensão 3.0: mudanças reais e validação
 
 O painel injetado (`panel.js` e `content.js`), o popup e as configurações foram redesenhados. Os testes carregam a extensão real com manifesto, serviço de fundo e scripts de conteúdo em um perfil Chrome isolado.

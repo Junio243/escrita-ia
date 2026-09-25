@@ -343,6 +343,13 @@ const profile = process.env.TEST_PROFILE || path.resolve("work/chrome-v2-test");
     assert.equal(await options.locator("#key").getAttribute("type"), "text");
     await options.locator("#show-key").click();
     await options.locator("#key").fill("");
+    await options.locator("#preset-google").click();
+    assert.equal(
+      await options.locator("#providerUrl").inputValue(),
+      "https://generativelanguage.googleapis.com/v1beta/openai",
+    );
+    assert.equal(await options.locator("#providerFormat").inputValue(), "chat");
+    assert.equal(await options.locator("#model").inputValue(), "");
     await options.locator("#preset-local").click();
     assert.equal(
       await options.locator("#providerUrl").inputValue(),

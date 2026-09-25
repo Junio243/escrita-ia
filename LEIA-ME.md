@@ -1,4 +1,4 @@
-# Escrita IA 3.0.0
+# Escrita IA 3.0.1
 
 Assistente de escrita integrado aos campos do navegador. A análise começa após 600 milissegundos sem digitação. As sugestões aparecem grifadas; **nenhuma alteração é aplicada sem seu clique**.
 
@@ -8,13 +8,13 @@ Se os arquivos da pasta instalada já foram atualizados por este atendimento:
 
 1. Abra `chrome://extensions`.
 2. No cartão **Escrita IA**, clique em **Recarregar** (seta circular). Mantenha o **Modo do desenvolvedor** ligado.
-3. Confirme a versão **3.0.0** e recarregue os sites já abertos.
+3. Confirme a versão **3.0.1** e recarregue os sites já abertos.
 
 Ao manter a mesma pasta, a chave e as preferências existentes permanecem no armazenamento da extensão. A preferência antiga de aplicação automática continua migrada para sugestões por clique.
 
 ## Instalar pelo ZIP
 
-1. Extraia **escrita-ia-3.0.0.zip** em uma pasta permanente.
+1. Extraia **escrita-ia-3.0.1.zip** em uma pasta permanente.
 2. O `manifest.json` está diretamente na raiz do ZIP. Selecione exatamente a pasta onde ele aparece, sem selecionar a pasta acima nem o arquivo ZIP.
 3. Em `chrome://extensions`, ative **Modo do desenvolvedor** e escolha **Carregar sem compactação**.
 4. Em **Detalhes → Acesso ao site**, escolha **Em todos os sites** para permitir a detecção automática.

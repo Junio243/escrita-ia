@@ -1,4 +1,9 @@
-import { normalizeProviderUrl, DEFAULT_PROVIDER_URL } from "./provider.js";
+import {
+  normalizeProviderUrl,
+  DEFAULT_PROVIDER_URL,
+  GOOGLE_PROVIDER_URL,
+  isGoogleProvider,
+} from "./provider.js";
 const $ = (id) => document.getElementById(id),
   E = globalThis.EscritaEngine;
 const secure = chrome.storage.local.setAccessLevel({
@@ -147,7 +152,9 @@ async function savePreferences(announce = true) {
     schemaVersion: 3,
     autoApply: false,
     providerUrl,
-    providerFormat: $("providerFormat").value,
+    providerFormat: isGoogleProvider(providerUrl)
+      ? "chat"
+      : $("providerFormat").value,
     model,
     assistantEnabled: $("enabled").checked,
     language: $("language").value,
@@ -155,6 +162,7 @@ async function savePreferences(announce = true) {
     theme: $("theme").value,
   });
   $("providerUrl").value = providerUrl;
+  if (isGoogleProvider(providerUrl)) $("providerFormat").value = "chat";
   $("key").value = "";
   $("key").type = "password";
   $("show-key").textContent = "Mostrar";
@@ -223,12 +231,17 @@ $("providerUrl").addEventListener("change", () =>
 for (const [id, url] of [
   ["preset-openai", DEFAULT_PROVIDER_URL],
   ["preset-local", "http://localhost:11434/v1"],
+  ["preset-google", GOOGLE_PROVIDER_URL],
 ])
   $(id).onclick = () => {
     $("providerUrl").value = url;
     $("key").value = "";
     $("model").value = id === "preset-openai" ? "gpt-4.1-mini" : "";
-    $("providerFormat").value = "auto";
+    $("providerFormat").value = id === "preset-google" ? "chat" : "auto";
+    $("model").placeholder =
+      id === "preset-google"
+        ? "Identificador exato do modelo Gemini no AI Studio"
+        : "Identificador fornecido pelo seu provedor";
     status("Predefinição preenchida. Confira o modelo e salve para usar.");
     credentialState().catch((e) => status(e.message));
   };

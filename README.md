@@ -53,6 +53,16 @@ A apresentação prioriza o editor, com painel lateral, destaques diretamente no
 
 ## Provedores de IA
 
+### Google AI Studio / Gemini (3.0.1)
+
+Nas configurações, clique em **Google AI Studio**, informe a chave no campo próprio e o identificador exato do modelo disponível na sua conta. Use **Salvar e testar conexão**.
+
+- URL: `https://generativelanguage.googleapis.com/v1beta/openai/`
+- Formato: **Chat Completions** (também selecionado automaticamente para esse domínio).
+- Modelo: o nome do modelo Gemini no AI Studio, não um identificador `gpt-*`.
+
+A versão 3.0.1 corrige a tentativa indevida de Responses no Google e distingue erros de modelo, chave, permissão e cota. [Documentação oficial](https://ai.google.dev/gemini-api/docs/openai).
+
 A extensão aceita serviços compatíveis com a API da OpenAI. A configuração possui:
 
 - URL da API;
@@ -129,6 +139,6 @@ As regras de retenção, privacidade e cobrança dependem do provedor escolhido.
 
 ## Versão
 
-Versão atual: **3.0.0**.
+Versão atual: **3.0.1**.
 
 Consulte [LEIA-ME.md](LEIA-ME.md) para instruções completas e [VALIDACAO.md](VALIDACAO.md) para os resultados de validação.
