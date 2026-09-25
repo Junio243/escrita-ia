@@ -9,7 +9,11 @@ Extensão para Google Chrome que revisa ortografia, gramática, pontuação, est
 
 **[Abrir demonstração interativa](https://Junio243.github.io/escrita-ia/)** · [Baixar extensão](https://github.com/Junio243/escrita-ia/archive/refs/heads/main.zip)
 
+O novo **Estúdio de escrita** tem exemplos de ideia, e-mail, trabalho e redes sociais, tema claro/escuro, modo foco (saída com `Esc`), contagem de palavras, estimativa de leitura e cópia do texto. Ao trocar um exemplo, **Desfazer** recupera o rascunho anterior. Apenas a preferência de tema é salva; o texto não persiste ao recarregar a página.
+
 [![Prévia da demonstração Escrita IA](docs/screenshots/demo.png)](https://Junio243.github.io/escrita-ia/)
+
+[Visualizar tema escuro](docs/screenshots/demo-dark.png) · [Visualizar no celular](docs/screenshots/demo-mobile.png)
 
 ## Recursos
 

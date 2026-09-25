@@ -1,61 +1,394 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Escrita IA: seu assistente de revisão no Chrome. Experimente a demonstração local e conheça a extensão de código aberto.">
-  <meta name="theme-color" content="#f7f8fc">
-  <title>Escrita IA — Sua escrita, com mais clareza</title>
-  <link rel="icon" href="icons/icon32.png">
-  <link rel="stylesheet" href="style.css">
-  <script src="engine.js" defer></script>
-  <script src="demo.js" defer></script>
-</head>
-<body>
-  <a class="skip" href="#demo">Pular para a demonstração</a>
-  <header class="nav wrap">
-    <a class="brand" href="#"><span class="logo" aria-hidden="true">e<span>✦</span></span> escrita<span class="brand-ai">ia</span></a>
-    <nav aria-label="Navegação principal"><a href="#recursos">Recursos</a><a href="#instalar">Como instalar</a><a class="github" href="https://github.com/Junio243/escrita-ia">Ver no GitHub <span aria-hidden="true">↗</span></a></nav>
-  </header>
-  <main>
-    <section class="hero wrap">
-      <div class="hero-copy">
-        <p class="eyebrow"><span></span> SEU ASSISTENTE DE ESCRITA NO CHROME</p>
-        <h1>Suas ideias.<br>As melhores<br><em>palavras.</em></h1>
-        <p class="intro">Da primeira mensagem ao último parágrafo. Revise, encontre clareza e escreva com confiança — sem perder sua voz.</p>
-        <div class="actions"><a class="button primary" href="#demo">Experimente agora <span aria-hidden="true">↗</span></a><a class="button secondary" href="#instalar">Instalar extensão</a></div>
-        <p class="micro">Código aberto <span>·</span> 36 variantes de idioma <span>·</span> Você no controle</p>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Encontre as palavras para suas melhores ideias. Conheça a Escrita IA, seu assistente de revisão no Chrome, e experimente o estúdio de escrita."
+    />
+    <meta name="theme-color" content="#f5f6f0" />
+    <title>Escrita IA — Ideias livres. Palavras precisas.</title>
+    <link rel="icon" href="icons/icon32.png" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="engine.js" defer></script>
+    <script src="demo.js" defer></script>
+  </head>
+  <body>
+    <a class="skip" href="#writing">Pular para o editor</a>
+    <header class="nav wrap">
+      <a class="brand" href="#" aria-label="Escrita IA, início"
+        ><span class="brand-mark" aria-hidden="true">e<span>✳</span></span
+        >escrita<span class="brand-ai">ia</span></a
+      >
+      <nav aria-label="Navegação principal">
+        <a href="#recursos">Por que Escrita?</a
+        ><a href="#instalar">Como funciona</a
+        ><a href="https://github.com/Junio243/escrita-ia">GitHub ↗</a>
+      </nav>
+      <div class="nav-actions">
+        <button
+          id="theme"
+          class="icon-button"
+          type="button"
+          aria-label="Ativar tema escuro"
+          aria-pressed="false"
+        >
+          ◐</button
+        ><a class="button small dark" href="#instalar"
+          >Adicionar ao Chrome <span aria-hidden="true">↗</span></a
+        >
       </div>
-      <div class="editor-shell" id="demo">
-        <div class="editor-bar"><span><span class="live-dot"></span> Seu espaço de escrita</span><span class="pill">DEMO LOCAL</span></div>
-        <div class="editor-content">
-          <div class="editor-heading"><label for="writing">Uma boa ideia começa aqui.</label><button id="reset" class="text-button" type="button">Restaurar exemplo</button></div>
-          <textarea id="writing" maxlength="12000" spellcheck="false" aria-describedby="demo-note" placeholder="Escreva algo para começar…">Às vezes, tudo que uma boa ideia precisa é de um pouco de clareza.
+    </header>
+    <main>
+      <section class="hero wrap" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow">
+            <span class="live-dot"></span> UM NOVO OLHAR PARA A SUA ESCRITA
+          </p>
+          <h1 id="hero-title">
+            Ideias livres.<br />Palavras<br /><span class="serif"
+              >precisas.</span
+            ><span class="hero-star" aria-hidden="true">✳</span>
+          </h1>
+          <p class="intro">
+            Sua voz merece ser bem entendida. Transforme o que você pensa em
+            textos mais claros, naturais e cheios de intenção.
+          </p>
+          <div class="actions">
+            <a class="button dark" href="#demo"
+              >Experimente agora <span aria-hidden="true">↗</span></a
+            ><a class="text-link" href="#instalar"
+              >Conhecer a extensão <span aria-hidden="true">→</span></a
+            >
+          </div>
+          <div class="hero-foot">
+            <span class="mini-icon" aria-hidden="true">✓</span>
+            <p>
+              Você escreve. A gente sugere.<br /><strong
+                >A palavra final é sempre sua.</strong
+              >
+            </p>
+          </div>
+        </div>
+        <div class="studio-stage">
+          <div class="stage-label">
+            <span>SEU PRÓXIMO BOM TEXTO COMEÇA AQUI</span
+            ><span aria-hidden="true">↘</span>
+          </div>
+          <div class="editor-shell" id="demo">
+            <div class="editor-bar">
+              <span class="studio-brand"
+                ><span aria-hidden="true">✳</span> Estúdio de escrita</span
+              >
+              <div>
+                <span class="pill"
+                  ><span class="live-dot"></span> DEMO LOCAL</span
+                ><button
+                  id="focus"
+                  type="button"
+                  class="icon-button"
+                  aria-label="Ativar modo foco"
+                  aria-pressed="false"
+                >
+                  ⛶
+                </button>
+              </div>
+            </div>
+            <div
+              class="scenario-bar"
+              role="group"
+              aria-label="Exemplos de texto"
+            >
+              <button type="button" data-example="idea" aria-pressed="true">
+                Uma ideia</button
+              ><button type="button" data-example="email" aria-pressed="false">
+                E-mail</button
+              ><button type="button" data-example="work" aria-pressed="false">
+                Trabalho</button
+              ><button type="button" data-example="social" aria-pressed="false">
+                Redes sociais
+              </button>
+            </div>
+            <div class="editor-content">
+              <div class="editor-heading">
+                <label for="writing">Dê espaço à sua próxima ideia.</label
+                ><button id="reset" class="text-button" type="button">
+                  Restaurar exemplo
+                </button>
+              </div>
+              <textarea
+                id="writing"
+                maxlength="12000"
+                spellcheck="false"
+                aria-describedby="demo-note"
+                placeholder="A página é sua. Comece a escrever…"
+              >
+Às vezes, tudo que uma boa ideia precisa é de um pouco de clareza.
 
-Quero quero compartilhar  essa ideia com você.</textarea>
-          <div class="editor-meta"><span id="metrics"></span><span>Português (Brasil)</span></div>
+Quero quero compartilhar  essa ideia com você.</textarea
+              >
+              <div class="editor-meta">
+                <span id="metrics"></span><span id="reading"></span>
+              </div>
+            </div>
+            <div class="review">
+              <div class="review-heading">
+                <h2>
+                  <span aria-hidden="true">✳</span> Pequenos ajustes, mais
+                  clareza <span id="issue-count">2</span>
+                </h2>
+                <button id="undo" type="button" disabled>Desfazer</button>
+              </div>
+              <p id="status" role="status" aria-live="polite"></p>
+              <div id="suggestions"></div>
+              <div id="empty-state" hidden>
+                <span aria-hidden="true">✓</span>
+                <p>
+                  Espaço para as suas ideias.<br /><small
+                    >Sem repetições detectadas pelas regras locais.</small
+                  >
+                </p>
+              </div>
+            </div>
+            <div class="studio-footer">
+              <span><span class="live-dot"></span> Só no seu navegador</span
+              ><button id="copy" type="button" class="text-button">
+                Copiar texto <span aria-hidden="true">↗</span>
+              </button>
+            </div>
+            <p id="demo-note" class="demo-note">
+              Demo de palavras e espaços duplicados. Nenhum texto é enviado. A
+              revisão com IA está disponível na extensão com seu provedor
+              configurado.
+            </p>
+          </div>
+          <div class="stage-caption">
+            <span aria-hidden="true">↳</span> Sem cadastro. Sem chave. Só você e
+            as palavras.
+          </div>
         </div>
-        <div class="review">
-          <div class="review-heading"><h2><span aria-hidden="true">✦</span> Um olhar sobre seu texto</h2><button id="undo" type="button" disabled>Desfazer</button></div>
-          <p id="status" role="status" aria-live="polite"></p>
-          <div id="suggestions"></div>
+      </section>
+      <section class="trust-strip wrap" aria-label="Diferenciais">
+        <p>MENOS RUÍDO.<br /><strong>MAIS POSSIBILIDADES.</strong></p>
+        <div><strong>36</strong><span>variantes de idioma</span></div>
+        <div><strong>5</strong><span>estilos de reescrita</span></div>
+        <div><strong>100%</strong><span>código aberto</span></div>
+        <div><strong>Seu</strong><span>provedor, sua escolha</span></div>
+      </section>
+      <section
+        class="features wrap"
+        id="recursos"
+        aria-labelledby="features-title"
+      >
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">01 / FEITA PARA O SEU FLUXO</p>
+            <h2 id="features-title">
+              Não mude seu jeito.<br /><span class="serif"
+                >Amplie sua expressão.</span
+              >
+            </h2>
+          </div>
+          <p>
+            Da mensagem rápida à proposta importante, um cuidado a mais com o
+            que você quer dizer.
+          </p>
         </div>
-        <p id="demo-note" class="demo-note">Esta demo identifica espaços e palavras duplicadas no seu navegador. Nenhum texto é enviado. Para revisão com IA, instale a extensão e configure seu provedor.</p>
+        <div class="bento-grid">
+          <article class="feature-card clarity">
+            <div class="card-top">
+              <span class="feature-icon" aria-hidden="true">Aa</span
+              ><span class="card-number">01</span>
+            </div>
+            <h3>Clareza que faz diferença.</h3>
+            <p>
+              Ortografia, gramática e estilo. Sugestões no campo em que você já
+              está escrevendo, com a extensão.
+            </p>
+            <div class="example-card">
+              <span class="example-label">UM PEQUENO AJUSTE</span>
+              <p>
+                Vamos <del>conversar conversar</del><br /><ins>conversar</ins>
+                sobre essa ideia.
+              </p>
+              <span class="example-caption"
+                ><span aria-hidden="true">✓</span> Sua intenção, sem a
+                repetição.</span
+              >
+            </div>
+          </article>
+          <article class="feature-card tone">
+            <div class="card-top">
+              <span class="feature-icon" aria-hidden="true">↗</span
+              ><span class="card-number">02</span>
+            </div>
+            <h3>Um texto. Novas possibilidades.</h3>
+            <p>
+              Na extensão, selecione um trecho e explore cinco formas de
+              expressar a mesma ideia com IA.
+            </p>
+            <div class="tone-cloud" aria-label="Estilos de reescrita">
+              <span>Mais claro</span><span>Mais conciso</span
+              ><span>Mais formal ↗</span><span>Mais fluido</span
+              ><span>Mais persuasivo</span>
+            </div>
+            <p class="card-note">
+              A mesma intenção. O tom que combina com você.
+            </p>
+          </article>
+          <article class="feature-card control">
+            <div class="card-top">
+              <span class="feature-icon" aria-hidden="true">⌘</span
+              ><span class="card-number">03</span>
+            </div>
+            <h3>Você no comando.</h3>
+            <p>
+              Aplique quando fizer sentido. Desfaça quando quiser. Nenhuma
+              alteração acontece sem o seu clique.
+            </p>
+            <div class="keys" aria-label="Atalho Alt mais Shift mais E">
+              <kbd>Alt</kbd><span>+</span><kbd>Shift</kbd><span>+</span
+              ><kbd>E</kbd>
+            </div>
+            <p class="card-note">Seu painel, a um atalho de distância.</p>
+          </article>
+          <article class="feature-card language">
+            <div>
+              <p class="eyebrow">SUAS PALAVRAS, SEM FRONTEIRAS</p>
+              <h3>Um mundo de formas<br />de se expressar.</h3>
+              <p>
+                36 variantes em 34 idiomas.<br />Escolha a sua nas
+                configurações.
+              </p>
+            </div>
+            <div class="language-orbit" aria-hidden="true">
+              <span>Olá</span><span>Hello</span><span>Hola</span
+              ><span>Bonjour</span><span>Ciao</span>
+            </div>
+          </article>
+        </div>
+      </section>
+      <section class="install-section" id="instalar">
+        <div class="install wrap">
+          <div>
+            <p class="eyebrow">02 / SEU PRÓXIMO PASSO</p>
+            <h2>
+              Uma boa escrita<br />começa com<br /><span class="serif"
+                >uma escolha.</span
+              >
+            </h2>
+            <p>
+              Leve a Escrita IA para o Chrome e encontre mais clareza no seu dia
+              a dia.
+            </p>
+            <a
+              class="button mint"
+              href="https://github.com/Junio243/escrita-ia/archive/refs/heads/main.zip"
+              >Baixar extensão <span aria-hidden="true">↓</span></a
+            >
+            <p class="install-note">
+              Extensão gratuita e de código aberto.<br />O provedor de IA
+              escolhido pode cobrar pelo uso.
+            </p>
+          </div>
+          <ol>
+            <li>
+              <span class="step-number">01</span>
+              <div>
+                <h3>Baixe. Extraia. Pronto para começar.</h3>
+                <p>
+                  Baixe o projeto pelo botão e descompacte o arquivo ZIP em uma
+                  pasta do seu computador.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="step-number">02</span>
+              <div>
+                <h3>Um novo integrante no seu Chrome.</h3>
+                <p>
+                  Abra <code>chrome://extensions</code>, ative o
+                  <strong>Modo do desenvolvedor</strong> e clique em
+                  <strong>Carregar sem compactação</strong>. Selecione a pasta
+                  com <code>manifest.json</code>.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="step-number">03</span>
+              <div>
+                <h3>Conecte a IA que faz sentido para você.</h3>
+                <p>
+                  Nas configurações, informe a URL, o modelo e a chave do seu
+                  provedor. Clique em <strong>Salvar e testar conexão</strong>.
+                </p>
+              </div>
+            </li>
+          </ol>
+        </div>
+      </section>
+      <section class="faq wrap">
+        <div>
+          <p class="eyebrow">03 / TUDO ÀS CLARAS</p>
+          <h2>Antes da<br /><span class="serif">primeira palavra.</span></h2>
+        </div>
+        <div class="faq-list">
+          <details>
+            <summary>A demonstração usa inteligência artificial?</summary>
+            <p>
+              Esta página usa apenas as regras locais de espaços e palavras
+              duplicadas, as mesmas da extensão. Para analisar gramática, estilo
+              e tom com IA, instale a extensão e configure seu provedor.
+            </p>
+          </details>
+          <details>
+            <summary>Para onde vai o meu texto?</summary>
+            <p>
+              Nesta demonstração, o texto fica no navegador e não é salvo ao
+              fechar a página. Na extensão, o conteúdo do campo em revisão é
+              enviado ao provedor que você configurar. As condições de
+              privacidade dependem desse serviço.
+            </p>
+          </details>
+          <details>
+            <summary>Funciona em qualquer site?</summary>
+            <p>
+              A extensão acompanha campos de texto e editores compatíveis.
+              Páginas internas do Chrome, áreas protegidas e editores em canvas
+              podem impedir a integração. Consulte o README para detalhes e
+              limitações.
+            </p>
+          </details>
+          <details>
+            <summary>Preciso pagar para usar?</summary>
+            <p>
+              O código da extensão é gratuito e tem licença MIT. O serviço de IA
+              escolhido pode cobrar por requisição. Provedores locais
+              compatíveis também são aceitos.
+            </p>
+          </details>
+        </div>
+      </section>
+      <section class="closing wrap">
+        <span aria-hidden="true">✳</span>
+        <h2>
+          O mundo precisa<br />das <span class="serif">suas ideias.</span>
+        </h2>
+        <a class="button dark" href="#demo"
+          >Comece a escrever <span aria-hidden="true">↗</span></a
+        >
+      </section>
+    </main>
+    <footer class="wrap">
+      <a class="brand" href="#">escrita<span class="brand-ai">ia</span></a
+      ><span>Mais clareza. A mesma voz.</span>
+      <div>
+        <a href="https://github.com/Junio243/escrita-ia#privacidade"
+          >Privacidade ↗</a
+        ><a href="https://github.com/Junio243/escrita-ia">Código aberto ↗</a
+        ><span>Licença MIT</span>
       </div>
-    </section>
-    <section class="features wrap" id="recursos" aria-labelledby="features-title">
-      <div class="section-title"><p class="eyebrow">MENOS DISTRAÇÕES. MAIS EXPRESSÃO.</p><h2 id="features-title">Um cuidado a mais com cada palavra.</h2></div>
-      <div class="feature-grid">
-        <article><span class="feature-icon" aria-hidden="true">Aa</span><h3>Clareza em cada frase</h3><p>Na extensão, receba sugestões de ortografia, gramática e estilo direto nos seus campos de texto.</p></article>
-        <article><span class="feature-icon" aria-hidden="true">↗</span><h3>O tom certo, do seu jeito</h3><p>Explore alternativas mais claras, concisas ou formais. Escolha a versão que combina com a sua intenção.</p></article>
-        <article><span class="feature-icon" aria-hidden="true">✓</span><h3>A decisão é sempre sua</h3><p>Nada muda sem o seu clique. Aplique uma sugestão, desfaça e mantenha o controle do que você escreve.</p></article>
-      </div>
-    </section>
-    <section class="install wrap" id="instalar" aria-labelledby="install-title">
-      <div><p class="eyebrow">PRONTO PARA COMEÇAR?</p><h2 id="install-title">Leve a Escrita IA<br>para o seu navegador.</h2><p>A extensão é gratuita e de código aberto. O uso de IA depende do provedor escolhido e pode ter custos.</p><a class="button primary" href="https://github.com/Junio243/escrita-ia/archive/refs/heads/main.zip">Baixar extensão <span aria-hidden="true">↓</span></a></div>
-      <ol><li><strong>Baixe e extraia o projeto</strong><span>Use o botão ao lado e descompacte o arquivo ZIP.</span></li><li><strong>Carregue no Chrome</strong><span>Abra <code>chrome://extensions</code>, ative o Modo do desenvolvedor e clique em “Carregar sem compactação”. Selecione a pasta com <code>manifest.json</code>.</span></li><li><strong>Escolha seu provedor de IA</strong><span>Nas configurações da extensão, informe a URL, o modelo e a chave da API. Salve e teste a conexão.</span></li></ol>
-    </section>
-  </main>
-  <footer class="wrap"><span>Escrita IA · Feita para respeitar sua voz.</span><a href="https://github.com/Junio243/escrita-ia#privacidade">Privacidade e documentação ↗</a><span>Licença MIT</span></footer>
-</body>
+    </footer>
+  </body>
 </html>
