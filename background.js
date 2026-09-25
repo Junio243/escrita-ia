@@ -1,7 +1,7 @@
 import {E} from './core.js';
 import {DEFAULT_PROVIDER_URL,normalizeProviderUrl,transportOrder,requestFor,parseProviderResponse} from './provider.js';
 const secured=chrome.storage.local.setAccessLevel({accessLevel:'TRUSTED_CONTEXTS'});
-const jobs=new Map(),cache=new Map(),epochs=new Map();
+const jobs=new Map(),cache=new Map(),epochs=new Map(),stats={analyses:0,issues:0,applied:0};
 async function settings(){await secured;const p=await chrome.storage.local.get({assistantEnabled:true,autoSites:{},language:'auto',picky:false,dictionary:{},theme:'system'});return {assistantEnabled:p.assistantEnabled,autoSites:p.autoSites,language:p.language,picky:p.picky,dictionary:p.dictionary,theme:p.theme};}
 async function credentials(){
   await secured;const a=await chrome.storage.local.get({model:'gpt-4.1-mini',apiKey:'',apiKeyProviderUrl:'',providerUrl:DEFAULT_PROVIDER_URL,providerFormat:'auto'}),b=await chrome.storage.session.get(['apiKey','apiKeyProviderUrl']);
@@ -43,8 +43,9 @@ chrome.runtime.onMessage.addListener((msg,sender,reply)=>{
   const epoch=isJob?(epochs.get(id)||0)+1:0;
   if(isJob){epochs.set(id,epoch);jobs.get(id)?.abort();}
   (async()=>{
-    if(msg.type==='prefs'){const prefs=await settings(),c=await credentials();return {prefs,hasKey:c.ready,provider:{url:c.url,format:c.format,model:c.model,hasCredential:!!c.key},version:chrome.runtime.getManifest().version,siteEnabled:senderAllowed(prefs,sender)};}
+    if(msg.type==='prefs'){const prefs=await settings(),c=await credentials();return {prefs,hasKey:c.ready,provider:{url:c.url,format:c.format,model:c.model,hasCredential:!!c.key},version:chrome.runtime.getManifest().version,siteEnabled:senderAllowed(prefs,sender),stats:{...stats}};}
     if(msg.type==='openSettings'){await chrome.runtime.openOptionsPage();return {};}
+    if(msg.type==='applied'){stats.applied++;return {};}
     if(msg.type==='cancel'){jobs.get(id)?.abort();return {};}
     if(msg.type==='dictionaryAdd'){
       if(!Object.hasOwn(E.languages,msg.language)||msg.language==='auto'||typeof msg.word!=='string'||!msg.word.trim()||msg.word.length>100)throw Error('Termo inválido.');
@@ -67,8 +68,14 @@ chrome.runtime.onMessage.addListener((msg,sender,reply)=>{
         const result=await api('analyze',block,p,c,controller.signal);language=result.language;
         for(const issue of result.issues){const pos=E.locate(block.text,issue);if(pos)all.push({...issue,start:block.start+pos.start,end:block.start+pos.end,language:result.language,source:'ai'});}
       }
-      return {language,issues:E.merge([...E.localIssues(msg.text),...all],msg.text,p.dictionary,language)};
+      const merged=E.merge([...E.localIssues(msg.text),...all],msg.text,p.dictionary,language);
+      stats.analyses++;stats.issues+=merged.length;
+      return {language,issues:merged};
     }catch(error){if(controller.signal.aborted&&controller.signal.reason==='timeout')throw Error('A análise demorou demais. Tente um texto menor ou revise novamente.');throw error;}finally{clearTimeout(timeout);if(jobs.get(id)===controller)jobs.delete(id);}
   })().then(result=>reply({ok:true,...result}),error=>reply({ok:false,error:error.name==='AbortError'?'Análise interrompida. Tente novamente.':error.message}));
   return true;
+});
+chrome.commands?.onCommand.addListener(async command=>{
+  if(command!=='toggle-panel')return;
+  try{const [tab]=await chrome.tabs.query({active:true,currentWindow:true});if(tab?.id!=null)await chrome.tabs.sendMessage(tab.id,{type:'togglePanel'});}catch{}
 });

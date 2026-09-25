@@ -1,4 +1,4 @@
-# Escrita IA 2.1.1
+# Escrita IA 2.2.0
 
 Assistente de escrita integrado aos campos do navegador. A análise começa após 600 milissegundos sem digitação. As sugestões aparecem grifadas; **nenhuma alteração é aplicada sem seu clique**.
 
@@ -8,13 +8,13 @@ Se os arquivos da pasta instalada já foram atualizados por este atendimento:
 
 1. Abra `chrome://extensions`.
 2. No cartão **Escrita IA**, clique em **Recarregar** (seta circular). Mantenha o **Modo do desenvolvedor** ligado.
-3. Confirme a versão **2.1.1** e recarregue os sites já abertos.
+3. Confirme a versão **2.2.0** e recarregue os sites já abertos.
 
 Ao manter a mesma pasta, a chave e as preferências existentes permanecem no armazenamento da extensão. A preferência antiga de aplicação automática continua migrada para sugestões por clique.
 
 ## Instalar pelo ZIP
 
-1. Extraia **escrita-ia-2.1.1.zip** em uma pasta permanente.
+1. Extraia **escrita-ia-2.2.0.zip** em uma pasta permanente.
 2. O `manifest.json` está diretamente na raiz do ZIP. Selecione exatamente a pasta onde ele aparece, sem selecionar a pasta acima nem o arquivo ZIP.
 3. Em `chrome://extensions`, ative **Modo do desenvolvedor** e escolha **Carregar sem compactação**.
 4. Em **Detalhes → Acesso ao site**, escolha **Em todos os sites** para permitir a detecção automática.
@@ -45,6 +45,7 @@ Para proteger a credencial, URLs remotas exigem HTTPS. HTTP é permitido somente
 ## Revisar e reescrever
 
 - O indicador no canto do campo mostra o estado, a quantidade de ocorrências e as contagens de palavras e caracteres.
+- Pressione `Alt+Shift+E` com um campo ativo para abrir ou fechar o painel sem usar o mouse.
 - Vermelho indica ortografia; âmbar, gramática, pontuação e tipografia; violeta, estilo e tom. Os cartões também identificam a categoria por escrito.
 - Passe o mouse ou clique no grifo, ou navegue pelo teclado. O balão mostra a regra, uma explicação e as substituições.
 - Clique em uma substituição para aplicá-la. **Ignorar** oculta a ocorrência até a próxima edição. **Desfazer** restaura a última alteração se o campo não tiver mudado.
@@ -54,7 +55,7 @@ Para proteger a credencial, URLs remotas exigem HTTPS. HTTP é permitido somente
 
 ## Se nada aparecer
 
-Abra o ícone da extensão. O diagnóstico informa versão, URL, formato, modelo, presença de credencial, serviço de fundo, permissão do site e campo detectado. Clique em **Verificar e reconectar**. Se necessário, recarregue a página e confira o botão **Erros** em `chrome://extensions`.
+Abra o ícone da extensão. O diagnóstico informa versão, URL, formato, modelo, presença de credencial, serviço de fundo, permissão do site, campo detectado e as estatísticas da sessão (análises, ocorrências encontradas e sugestões aplicadas). Clique em **Verificar e reconectar**. Se necessário, recarregue a página e confira o botão **Erros** em `chrome://extensions`.
 
 Sem um provedor pronto, o indicador continua disponível e a verificação local de espaços duplicados funciona. Falhas da API nunca são apresentadas como “texto correto”. **Testar conexão** faz uma chamada real com uma frase de exemplo e pode gerar cobrança.
 

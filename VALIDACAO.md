@@ -1,14 +1,23 @@
-# Relatório de validação — Escrita IA 2.1.1
+# Relatório de validação — Escrita IA 2.2.0
 
-Data: 6 de setembro de 2026.
+Data: 25 de setembro de 2026.
 
-## Ambiente e método
+## Novidades da 2.2.0
+
+- Atalho `Alt+Shift+E` (`commands` no manifesto) que alterna o painel no campo ativo; o serviço de fundo encaminha o comando à aba ativa e o script de conteúdo alterna o painel.
+- Estatísticas da sessão no serviço de fundo (análises, ocorrências encontradas, sugestões aplicadas), exibidas no diagnóstico do popup. Desfazer não conta como sugestão aplicada.
+- Regra local de palavra duplicada (`engine.js`): repetições como "isso isso" são grifadas como gramática sem chamada à IA, com testes de acentos, caixa alta e falsos positivos ("a a", palavras distintas).
+- Acessibilidade do painel: `role="dialog"`, `aria-expanded` sincronizado em todos os caminhos de abrir/fechar e versão do diagnóstico lida do manifesto em vez de fixa no código.
+- Infra: licença MIT, `.gitignore`, workflow de CI (validação do manifesto + `npm test`) e badges no README.
+
+## Verificações automatizadas (31 testes locais aprovados, base 2.1.1 + 10 novos)
+
+## Ambiente e método (base 2.1.1, 6 de setembro de 2026)
 
 Os testes de integração usam Windows, Chrome, perfil isolado e a extensão carregada por `Extensions.loadUnpacked`. Manifesto, scripts de conteúdo e serviço de fundo são os arquivos reais do pacote. As respostas dos modelos foram simuladas no serviço de fundo para não usar credenciais pessoais nem gerar cobrança.
 
-## Verificações automatizadas
-
-- 21 testes locais aprovados: localização de ocorrências, posições antigas, trechos repetidos, Unicode, blocos longos, contadores, dicionário, regras locais, esquemas, migração, cache, cancelamento e erros de API.
+- 21 testes locais aprovados na base: localização de ocorrências, posições antigas, trechos repetidos, Unicode, blocos longos, contadores, dicionário, regras locais, esquemas, migração, cache, cancelamento e erros de API.
+- 10 testes novos na 2.2.0: palavra duplicada (posições, acentos, caixa alta, falsos positivos, pipeline de merge), métricas/blocos vazios, normalização, atalho de teclado e estatísticas da sessão.
 - URLs base e endpoints completos, HTTPS remoto, HTTP local e localhost IPv4/IPv6.
 - Chaves com formato livre e provedor local sem chave.
 - Responses API e Chat Completions em JSON Schema estrito, JSON simples e instrução de JSON.

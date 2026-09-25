@@ -28,7 +28,13 @@
     return hits.length===1?hits[0]:null;
   }
   function localIssues(text) {
-    return [...text.matchAll(/(?<=\S)[ ]{2,}(?=\S)/gu)].map(m=>({start:m.index,end:m.index+m[0].length,quote:m[0],category:'typography',rule:'Espaçamento duplicado',explanation:'Use um único espaço entre as palavras. Ignore se o espaçamento for intencional.',replacements:[' '],source:'local'}));
+    const spacing=[...text.matchAll(/(?<=\S)[ ]{2,}(?=\S)/gu)].map(m=>({start:m.index,end:m.index+m[0].length,quote:m[0],category:'typography',rule:'Espaçamento duplicado',explanation:'Use um único espaço entre as palavras. Ignore se o espaçamento for intencional.',replacements:[' '],source:'local'}));
+    const repeated=[];
+    for(const m of text.matchAll(/(^|[^\p{L}\p{N}_])(\p{L}{2,})(\s+)(\2)(?=[^\p{L}\p{N}_]|$)/giu)){
+      const start=m.index+m[1].length,quote=m[2]+m[3]+m[4];
+      repeated.push({start,end:start+quote.length,quote,category:'grammar',rule:'Palavra duplicada',explanation:`"${m[2]}" aparece duas vezes seguidas. Remova a repetição, salvo ênfase intencional.`,replacements:[m[2]],source:'local'});
+    }
+    return [...spacing,...repeated];
   }
   function merge(issues,text,dictionary={},locale='pt-BR') {
     const seen=new Set();

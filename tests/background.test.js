@@ -1,9 +1,10 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-let listener,installed,calls=0,httpStatus=200,latency=0,malformed=false,responsesUnsupported=false,chatUnsupported=false,lastRequest;
+let listener,installed,commandListener,httpStatus=200,latency=0,malformed=false,responsesUnsupported=false,chatUnsupported=false,lastRequest,calls=0;
+const sentMessages=[];
 const local={apiKey:'sk-test',model:'test',providerUrl:'https://api.openai.com/v1',providerFormat:'auto',language:'pt-BR',dictionary:{}},session={};
 function get(store,arg){if(typeof arg==='string')return {[arg]:store[arg]};if(Array.isArray(arg))return Object.fromEntries(arg.map(k=>[k,store[k]]));return {...arg,...store};}
-globalThis.chrome={runtime:{id:'test',getURL:path=>'chrome-extension://test/'+path,getManifest:()=>({version:'2.1.1'}),onInstalled:{addListener(fn){installed=fn;}},onMessage:{addListener(fn){listener=fn;}},async openOptionsPage(){}},storage:{local:{async setAccessLevel(){},async get(a){return get(local,a);},async set(p){Object.assign(local,p);}},session:{async get(a){return get(session,a);}},onChanged:{addListener(){}}},scripting:{async getRegisteredContentScripts(){return[];}},tabs:{async query(){return[];}}};
+globalThis.chrome={runtime:{id:'test',getURL:path=>'chrome-extension://test/'+path,getManifest:()=>({version:'2.2.0'}),onInstalled:{addListener(fn){installed=fn;}},onMessage:{addListener(fn){listener=fn;}},async openOptionsPage(){}},commands:{onCommand:{addListener(fn){commandListener=fn;}}},storage:{local:{async setAccessLevel(){},async get(a){return get(local,a);},async set(p){Object.assign(local,p);}},session:{async get(a){return get(session,a);}},onChanged:{addListener(){}}},scripting:{async getRegisteredContentScripts(){return[];}},tabs:{async query(){return[];},async sendMessage(id,msg){sentMessages.push({id,msg});}}};
 globalThis.fetch=async(url,options)=>{
   calls++;lastRequest={url,options};
   await new Promise((resolve,reject)=>{const t=setTimeout(resolve,latency);options.signal.addEventListener('abort',()=>{clearTimeout(t);reject(new DOMException('aborted','AbortError'));},{once:true});});
@@ -22,6 +23,24 @@ test('latest request wins and failures remain failures',async()=>{
   latency=30;const first=send({type:'analyze',text:'Primeira revisão.'});await new Promise(r=>setTimeout(r,5));const second=send({type:'analyze',text:'Segunda revisão.'});assert.equal((await first).ok,false);assert.equal((await second).ok,true);latency=0;
   httpStatus=429;assert.match((await send({type:'analyze',text:'Texto com limite.'})).error,/Limite/);httpStatus=401;assert.match((await send({type:'analyze',text:'Texto sem autenticação.'})).error,/Chave/);httpStatus=200;
   malformed=true;assert.equal((await send({type:'analyze',text:'Resposta malformada.'})).ok,false);malformed=false;
+});
+test('keyboard shortcut toggles the panel in the active tab',async()=>{
+  globalThis.chrome.tabs.query=async()=>[{id:7}];
+  await commandListener('toggle-panel');
+  assert.deepEqual(sentMessages.at(-1),{id:7,msg:{type:'togglePanel'}});
+  const n=sentMessages.length;
+  await commandListener('other-command');
+  assert.equal(sentMessages.length,n);
+  globalThis.chrome.tabs.query=async()=>[];
+});
+test('session stats track analyses, findings and applied suggestions',async()=>{
+  const before=(await send({type:'prefs'})).stats;
+  assert.equal((await send({type:'analyze',text:'Texto com  erro.'})).ok,true);
+  assert.equal((await send({type:'applied'})).ok,true);
+  const after=(await send({type:'prefs'})).stats;
+  assert.equal(after.analyses,before.analyses+1);
+  assert(after.issues>=before.issues+1);
+  assert.equal(after.applied,before.applied+1);
 });
 test('custom Chat Completions provider accepts arbitrary key formats and keyless local-style configuration',async()=>{
   local.providerUrl='https://provider.example/v1';local.providerFormat='chat';local.apiKey='token-not-sk';local.apiKeyProviderUrl=local.providerUrl;

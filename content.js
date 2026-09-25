@@ -8,12 +8,13 @@
   const safeText=el=>F.snapshot(el).text;
   const signature=i=>`${i.start}:${i.end}:${i.quote}:${i.rule}`;
   function status(text,state=phase){message=text;phase=state;U.status.textContent=text;U.badge.title=text;U.badge.dataset.state=state;U.badgeText.textContent=state==='loading'?'Revisando…':state==='missingKey'?'Configurar IA':state==='error'?'Verificar IA':'Escrita IA';}
+  function setPanel(open){U.panel.hidden=!open;U.badge.setAttribute('aria-expanded',String(open));}
   async function send(msg){const result=await chrome.runtime.sendMessage(msg);if(!result?.ok)throw Error(result?.error||'Serviço indisponível. Recarregue a extensão e esta página.');return result;}
   function invalidate(){revision++;clearTimeout(timer);send({type:'cancel'}).catch(()=>{});U.detail.hidden=true;selection=null;U.rewrite.replaceChildren();}
   function visible(){return issues.filter(i=>!ignored.has(signature(i)));}
   function geometry(){
-    raf=0;if(!current?.isConnected||!enabled||!F.safe(current)){U.badge.hidden=U.panel.hidden=true;U.marks.replaceChildren();return;}
-    const r=current.getBoundingClientRect();if(!r.width||!r.height||r.bottom<0||r.top>innerHeight){U.badge.hidden=U.panel.hidden=true;U.marks.replaceChildren();return;}
+    raf=0;if(!current?.isConnected||!enabled||!F.safe(current)){U.badge.hidden=true;setPanel(false);U.marks.replaceChildren();return;}
+    const r=current.getBoundingClientRect();if(!r.width||!r.height||r.bottom<0||r.top>innerHeight){U.badge.hidden=true;setPanel(false);U.marks.replaceChildren();return;}
     U.badge.hidden=false;
     const bw=U.badge.offsetWidth||175,bh=U.badge.offsetHeight||32;
     U.badge.style.left=Math.max(8,Math.min(r.right-bw,innerWidth-bw-8))+'px';
@@ -45,21 +46,21 @@
   }
   function showIssue(issue){
     if(!current||safeText(current)!==lastText)return;
-    U.panel.hidden=false;U.detail.hidden=false;U.detail.replaceChildren();U.detail.style.setProperty('--color',U.colors[issue.category]);
+    setPanel(true);U.detail.hidden=false;U.detail.replaceChildren();U.detail.style.setProperty('--color',U.colors[issue.category]);
     U.detail.append(n('div',{class:'category',text:E.categories[issue.category]}),n('div',{class:'quote',text:issue.quote}),n('div',{class:'explain',text:issue.explanation}));
     for(const replacement of issue.replacements){const b=n('button',{class:'button primary replacement',text:replacement||'Remover trecho','data-apply':''});b.onclick=()=>applyRange({el:current,before:lastText,start:issue.start,end:issue.end},replacement);U.detail.append(b);}
     const row=n('div',{class:'toolbar'}),ignore=n('button',{class:'button',text:'Ignorar'});ignore.onclick=()=>{ignored.add(signature(issue));U.detail.hidden=true;render();};row.append(ignore);
     if(issue.category==='spelling'){const add=n('button',{class:'button',text:'Adicionar ao dicionário'});add.onclick=async()=>{try{await send({type:'dictionaryAdd',word:issue.quote,language:issue.language||'pt-BR'});status('Termo salvo no dicionário.','ready');}catch(e){status(e.message,'error');}};row.append(add);}
     U.detail.append(row);layout();
   }
-  function applyRange(capture,replacement){
+  function applyRange(capture,replacement,countApplied=true){
     if(!capture||!F.safe(capture.el)||!capture.el.isConnected||safeText(capture.el)!==capture.before){status('O texto mudou. Aguarde a nova revisão.','ready');return;}
     const {el,before,start,end}=capture,after=before.slice(0,start)+replacement+before.slice(end);
     invalidate();writing=true;let ok=false;
     try{el.focus();ok=F.replace(el,after);}catch{ok=false;}finally{writing=false;}
     const actual=safeText(el);if(actual!==before)undo={el,before,after:actual};
     lastText=actual;issues=[];ignored.clear();render();status(ok?'Sugestão aplicada.':'O editor não aceitou a alteração integralmente. Use Desfazer ou copie a sugestão.',ok?'ready':'error');
-    if(ok)schedule();
+    if(ok){if(countApplied)send({type:'applied'}).catch(()=>{});schedule();}
   }
   function selectionUI(){
     if(!current||writing)return;const range=F.selection(current);
@@ -92,23 +93,23 @@
   }
   function activate(el){
     if(!F.safe(el))return;
-    if(current!==el){invalidate();current=el;ignored=new Set();lastText=safeText(el);issues=[];U.detail.hidden=true;U.panel.hidden=true;resize.disconnect();resize.observe(el);status(hasKey?'Pronto para revisar.':'Configure seu provedor de IA.',hasKey?'ready':'missingKey');render();schedule();}
+    if(current!==el){invalidate();current=el;ignored=new Set();lastText=safeText(el);issues=[];U.detail.hidden=true;setPanel(false);resize.disconnect();resize.observe(el);status(hasKey?'Pronto para revisar.':'Configure seu provedor de IA.',hasKey?'ready':'missingKey');render();schedule();}
     layout();
   }
   function changed(el){activate(el);invalidate();lastText=safeText(el);issues=E.merge(E.localIssues(lastText),lastText,prefs.dictionary,prefs.language==='auto'?'pt-BR':prefs.language);ignored.clear();status('Aguardando sua pausa…','ready');render();schedule();}
   async function refresh(){
     try{const r=await send({type:'prefs'});prefs=r.prefs;hasKey=r.hasKey;enabled=r.siteEnabled&&prefs.assistantEnabled;connected=true;U.ui.classList.toggle('dark',prefs.theme==='dark'||prefs.theme==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);invalidate();
-      if(!enabled){status('Assistente pausado.','paused');U.panel.hidden=U.badge.hidden=true;U.marks.replaceChildren();return;}
+      if(!enabled){status('Assistente pausado.','paused');U.badge.hidden=true;setPanel(false);U.marks.replaceChildren();return;}
       const el=F.focused();if(F.safe(el))activate(el);status(hasKey?'Pronto para revisar.':'Configure seu provedor de IA.',hasKey?'ready':'missingKey');render();schedule();
     }catch{connected=false;status('Serviço desconectado. Recarregue a extensão e esta página.','error');const el=F.focused();if(F.safe(el))activate(el);layout();}
   }
   const resize=new ResizeObserver(layout);new ResizeObserver(layout).observe(U.panel);
-  U.badge.onclick=()=>{U.panel.hidden=!U.panel.hidden;if(!U.panel.hidden)selectionUI();layout();};U.close.onclick=()=>U.panel.hidden=true;
+  U.badge.onclick=()=>{setPanel(U.panel.hidden);if(!U.panel.hidden)selectionUI();layout();};U.close.onclick=()=>setPanel(false);
   U.settings.onclick=()=>send({type:'openSettings'}).catch(()=>status('Abra Configurações pelo ícone da extensão.','error'));
   U.retry.onclick=()=>{refresh();};
-  U.undo.onclick=()=>{const previous=undo;if(!previous||safeText(previous.el)!==previous.after){status('O texto mudou; não é possível desfazer esta alteração.','error');return;}applyRange({el:previous.el,before:previous.after,start:0,end:previous.after.length},previous.before);undo=null;U.undo.hidden=true;};
+  U.undo.onclick=()=>{const previous=undo;if(!previous||safeText(previous.el)!==previous.after){status('O texto mudou; não é possível desfazer esta alteração.','error');return;}applyRange({el:previous.el,before:previous.after,start:0,end:previous.after.length},previous.before,false);undo=null;U.undo.hidden=true;};
   U.root.addEventListener('mousedown',e=>{if(e.target.closest('button'))e.preventDefault();});
-  document.addEventListener('focusin',e=>{if(writing||e.composedPath().includes(U.host))return;const el=F.field(e.composedPath()[0]);if(F.safe(el))activate(el);else{invalidate();current=null;U.panel.hidden=U.badge.hidden=true;U.marks.replaceChildren();}},true);
+  document.addEventListener('focusin',e=>{if(writing||e.composedPath().includes(U.host))return;const el=F.field(e.composedPath()[0]);if(F.safe(el))activate(el);else{invalidate();current=null;setPanel(false);U.badge.hidden=true;U.marks.replaceChildren();}},true);
   document.addEventListener('input',e=>{if(writing||!e.isTrusted||e.composedPath().includes(U.host))return;const el=F.field(e.composedPath()[0]);if(F.safe(el))changed(el);},true);
   document.addEventListener('compositionstart',e=>{if(F.field(e.composedPath()[0])){composing=true;invalidate();}},true);
   document.addEventListener('compositionend',e=>{composing=false;const el=F.field(e.composedPath()[0]);if(F.safe(el))changed(el);},true);
@@ -119,7 +120,7 @@
     if(!U.host.isConnected)document.documentElement.append(U.host);
     const el=F.focused();if(F.safe(el)){if(el!==current)activate(el);else if(!writing&&safeText(el)!==lastText)changed(el);}else if(current&&!current.isConnected){invalidate();current=null;layout();}
   });observer.observe(document.documentElement,{childList:true,subtree:true,characterData:true});
-  chrome.runtime.onMessage.addListener((msg,sender,reply)=>{if(sender.id!==chrome.runtime.id)return;if(msg.type==='prefsChanged'){refresh();return;}if(msg.type==='diagnose'){reply({version:'2.1.1',fieldDetected:!!current,adapter:current?F.adapter(current):null,connected,phase,enabled,hasKey});}});
+  chrome.runtime.onMessage.addListener((msg,sender,reply)=>{if(sender.id!==chrome.runtime.id)return;if(msg.type==='prefsChanged'){refresh();return;}if(msg.type==='togglePanel'){if(current&&enabled){setPanel(U.panel.hidden);if(!U.panel.hidden)selectionUI();layout();}return;}if(msg.type==='diagnose'){reply({version:chrome.runtime.getManifest().version,fieldDetected:!!current,adapter:current?F.adapter(current):null,connected,phase,enabled,hasKey});}});
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(prefs.theme==='system')U.ui.classList.toggle('dark',matchMedia('(prefers-color-scheme: dark)').matches);});
   const initial=F.focused();if(F.safe(initial))activate(initial);refresh();
 })();

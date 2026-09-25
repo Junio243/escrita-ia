@@ -1,5 +1,10 @@
 # Escrita IA
 
+[![CI](https://github.com/Junio243/escrita-ia/actions/workflows/ci.yml/badge.svg)](https://github.com/Junio243/escrita-ia/actions/workflows/ci.yml)
+![Chrome MV3](https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4)
+![Node 22](https://img.shields.io/badge/Node-22-339933)
+![Licença MIT](https://img.shields.io/badge/Licen%C3%A7a-MIT-green)
+
 Extensão para Google Chrome que revisa ortografia, gramática, pontuação, estilo e tom diretamente nos campos de texto do navegador. As ocorrências são grifadas durante a digitação e nenhuma alteração é aplicada sem o clique do usuário.
 
 ## Recursos
@@ -9,6 +14,9 @@ Extensão para Google Chrome que revisa ortografia, gramática, pontuação, est
 - Sugestões de estilo, tom, redundância e concisão.
 - Reescrita clara, concisa, formal, fluida ou persuasiva.
 - Aplicação de cada sugestão com um clique e opção de desfazer.
+- Atalho `Alt+Shift+E` para abrir/fechar o painel no campo ativo.
+- Estatísticas da sessão (análises, ocorrências, sugestões aplicadas) no diagnóstico.
+- Regra local de palavra duplicada, sem depender da IA.
 - Dicionário pessoal separado por idioma.
 - Modo Exigente para revisão estilística mais rigorosa.
 - Contadores de palavras e caracteres dentro do campo.
@@ -47,7 +55,11 @@ Requer Node.js para executar os testes locais:
 npm test
 ```
 
-A suíte cobre análise, reescrita, Unicode, dicionário, cache, cancelamento, segurança de credenciais e os transportes Responses e Chat Completions. O teste de navegador em `tests/browser.cjs` usa Playwright e carrega a extensão real em um perfil isolado do Chrome.
+A suíte cobre análise, reescrita, Unicode, dicionário, cache, cancelamento, segurança de credenciais, atalho de teclado, estatísticas da sessão e os transportes Responses e Chat Completions. O teste de navegador em `tests/browser.cjs` usa Playwright e carrega a extensão real em um perfil isolado do Chrome.
+
+## Demonstração
+
+> Coloque aqui um GIF ou prints: `docs/demo.gif`, `docs/painel.png`, `docs/configuracoes.png`.
 
 ## Arquivos importantes
 
@@ -69,6 +81,6 @@ As regras de retenção, privacidade e cobrança dependem do provedor escolhido.
 
 ## Versão
 
-Versão atual: **2.1.1**.
+Versão atual: **2.2.0**.
 
 Consulte [LEIA-ME.md](LEIA-ME.md) para instruções completas e [VALIDACAO.md](VALIDACAO.md) para os resultados de validação.
