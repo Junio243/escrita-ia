@@ -141,6 +141,6 @@ As regras de retenção, privacidade e cobrança dependem do provedor escolhido.
 
 ## Versão
 
-Versão atual: **3.0.1**.
+Versão atual: **3.0.2**.
 
 Consulte [LEIA-ME.md](LEIA-ME.md) para instruções completas e [VALIDACAO.md](VALIDACAO.md) para os resultados de validação.
