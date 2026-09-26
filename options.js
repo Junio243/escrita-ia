@@ -9,7 +9,11 @@ const $ = (id) => document.getElementById(id),
 const secure = chrome.storage.local.setAccessLevel({
   accessLevel: "TRUSTED_CONTEXTS",
 });
-const status = (t) => ($("status").textContent = t);
+const status = (text, state = "ready") => {
+  $("status").textContent = text;
+  $("status").dataset.state = state;
+  $("status").setAttribute("aria-busy", String(state === "loading"));
+};
 let busy = false;
 function lock(value) {
   busy = value;
@@ -75,6 +79,7 @@ async function terms() {
     $("terms").append(row);
   }
 }
+status("Carregando configurações…", "loading");
 lock(true);
 (async () => {
   await secure;
@@ -115,7 +120,7 @@ lock(true);
   await terms();
   await credentialState();
 })()
-  .catch((e) => status(e.message))
+  .catch((e) => status(e.message, "error"))
   .finally(() => lock(false));
 $("theme").onchange = () => theme($("theme").value);
 async function savePreferences(announce = true) {
@@ -168,7 +173,7 @@ async function savePreferences(announce = true) {
   $("show-key").textContent = "Mostrar";
   $("show-key").setAttribute("aria-pressed", "false");
   await credentialState();
-  if (announce) status("Provedor e preferências salvos.");
+  if (announce) status("Provedor e preferências salvos.", "success");
 }
 $("form").onsubmit = async (e) => {
   e.preventDefault();
@@ -177,7 +182,7 @@ $("form").onsubmit = async (e) => {
   try {
     await savePreferences();
   } catch (error) {
-    status(error.message);
+    status(error.message, "error");
   } finally {
     lock(false);
   }
@@ -189,10 +194,10 @@ $("forget").onclick = async () => {
     await chrome.storage.local.remove(["apiKey", "apiKeyProviderUrl"]);
     await chrome.storage.session.remove(["apiKey", "apiKeyProviderUrl"]);
     $("key").value = "";
-    status("Chave removida.");
+    status("Chave removida.", "success");
     await credentialState();
   } catch (e) {
-    status(e.message);
+    status(e.message, "error");
   } finally {
     lock(false);
   }
@@ -200,7 +205,7 @@ $("forget").onclick = async () => {
 $("test").onclick = async () => {
   if (busy) return;
   lock(true);
-  status("Salvando e testando com uma frase de exemplo…");
+  status("Conectando ao provedor e testando com uma frase de exemplo…", "loading");
   try {
     await savePreferences(false);
     const r = await chrome.runtime.sendMessage({
@@ -208,9 +213,9 @@ $("test").onclick = async () => {
       text: "Esta é uma frase de teste.",
     });
     if (!r.ok) throw Error(r.error);
-    status("Conexão confirmada. A API retornou uma análise válida.");
+    status("Conexão confirmada. A API retornou uma análise válida.", "success");
   } catch (e) {
-    status(e.message);
+    status(e.message, "error");
   } finally {
     lock(false);
   }
@@ -230,6 +235,7 @@ $("providerUrl").addEventListener("change", () =>
 );
 for (const [id, url] of [
   ["preset-openai", DEFAULT_PROVIDER_URL],
+  ["preset-openrouter", "https://openrouter.ai/api/v1"],
   ["preset-local", "http://localhost:11434/v1"],
   ["preset-google", GOOGLE_PROVIDER_URL],
 ])
@@ -241,7 +247,10 @@ for (const [id, url] of [
     $("model").placeholder =
       id === "preset-google"
         ? "Identificador exato do modelo Gemini no AI Studio"
+        : id === "preset-openrouter"
+          ? "Ex.: openai/gpt-4o-mini ou anthropic/claude-3.5-sonnet"
         : "Identificador fornecido pelo seu provedor";
+    if (id === "preset-openrouter") $("model").value = "openai/gpt-4o-mini";
     status("Predefinição preenchida. Confira o modelo e salve para usar.");
     credentialState().catch((e) => status(e.message));
   };
@@ -258,6 +267,6 @@ $("add").onclick = async () => {
     await terms();
     status("Termo adicionado.");
   } catch (e) {
-    status(e.message);
+    status(e.message, "error");
   }
 };

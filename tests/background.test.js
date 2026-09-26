@@ -5,6 +5,8 @@ let listener,
   commandListener,
   httpStatus = 200,
   latency = 0,
+  inFlight = 0,
+  maxInFlight = 0,
   malformed = false,
   responsesUnsupported = false,
   chatUnsupported = false,
@@ -84,37 +86,43 @@ globalThis.chrome = {
 globalThis.fetch = async (url, options) => {
   calls++;
   lastRequest = { url, options };
-  await new Promise((resolve, reject) => {
-    const t = setTimeout(resolve, latency);
-    options.signal.addEventListener(
-      "abort",
-      () => {
-        clearTimeout(t);
-        reject(new DOMException("aborted", "AbortError"));
-      },
-      { once: true },
+  inFlight++;
+  maxInFlight = Math.max(maxInFlight, inFlight);
+  try {
+    await new Promise((resolve, reject) => {
+      const t = setTimeout(resolve, latency);
+      options.signal.addEventListener(
+        "abort",
+        () => {
+          clearTimeout(t);
+          reject(new DOMException("aborted", "AbortError"));
+        },
+        { once: true },
+      );
+    });
+    if (responsesUnsupported && url.endsWith("/responses"))
+      return new Response("{}", { status: 404 });
+    if (chatUnsupported && url.endsWith("/chat/completions"))
+      return new Response("{}", { status: 404 });
+    if (httpStatus !== 200) return new Response("{}", { status: httpStatus });
+    const text = malformed
+      ? "invalid"
+      : JSON.stringify({ language: "pt-BR", issues: [] });
+    return new Response(
+      JSON.stringify(
+        url.endsWith("/chat/completions")
+          ? { choices: [{ message: { content: text } }] }
+          : {
+              status: "completed",
+              output: [
+                { type: "message", content: [{ type: "output_text", text }] },
+              ],
+            },
+      ),
     );
-  });
-  if (responsesUnsupported && url.endsWith("/responses"))
-    return new Response("{}", { status: 404 });
-  if (chatUnsupported && url.endsWith("/chat/completions"))
-    return new Response("{}", { status: 404 });
-  if (httpStatus !== 200) return new Response("{}", { status: httpStatus });
-  const text = malformed
-    ? "invalid"
-    : JSON.stringify({ language: "pt-BR", issues: [] });
-  return new Response(
-    JSON.stringify(
-      url.endsWith("/chat/completions")
-        ? { choices: [{ message: { content: text } }] }
-        : {
-            status: "completed",
-            output: [
-              { type: "message", content: [{ type: "output_text", text }] },
-            ],
-          },
-    ),
-  );
+  } finally {
+    inFlight--;
+  }
 };
 await import("../background.js");
 const sender = {
@@ -137,12 +145,19 @@ test("migration preserves credentials and disables automatic replacement", async
 test("preferences expose no credential and missing key causes no request", async () => {
   const p = await send({ type: "prefs" });
   assert.equal(p.hasKey, true);
+  assert.equal(p.prefs.badgePosition, null);
   assert(!JSON.stringify(p).includes("sk-test"));
   delete local.apiKey;
   const n = calls;
   assert.equal((await send({ type: "analyze", text: "Teste" })).ok, false);
   assert.equal(calls, n);
   local.apiKey = "sk-test";
+});
+test("preferences include saved badge position", async () => {
+  local.badgePosition = { x: 120, y: 180 };
+  const p = await send({ type: "prefs" });
+  assert.deepEqual(p.prefs.badgePosition, { x: 120, y: 180 });
+  delete local.badgePosition;
 });
 test("site pause enforced for both top document and frame", async () => {
   local.autoSites = { "https://example.test": false };
@@ -222,6 +237,16 @@ test("latest request wins and failures remain failures", async () => {
     false,
   );
   malformed = false;
+});
+test("long analyses process chunks concurrently", async () => {
+  latency = 40;
+  maxInFlight = 0;
+  const text = ("Texto longo para revisão paralela. ".repeat(280) + "\n").repeat(
+    3,
+  );
+  assert.equal((await send({ type: "analyze", text })).ok, true);
+  assert(maxInFlight > 1);
+  latency = 0;
 });
 test("keyboard shortcut toggles the panel in the active tab", async () => {
   globalThis.chrome.tabs.query = async () => [{ id: 7 }];
