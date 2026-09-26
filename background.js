@@ -24,6 +24,7 @@ async function settings() {
     picky: false,
     dictionary: {},
     theme: "system",
+    badgePosition: null,
   });
   return {
     assistantEnabled: p.assistantEnabled,
@@ -32,6 +33,7 @@ async function settings() {
     picky: p.picky,
     dictionary: p.dictionary,
     theme: p.theme,
+    badgePosition: p.badgePosition,
   };
 }
 async function credentials() {
@@ -283,14 +285,22 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
     const c = await credentials();
     if (!c.ready)
       throw Error(
-        "Configure URL, modelo e uma chave para OpenAI ou Google AI Studio.",
+        "Configure URL, modelo e chave (quando necessária) para o seu provedor de IA.",
       );
     if (epochs.get(id) !== epoch)
       throw Error("Análise substituída por uma solicitação mais recente.");
     jobs.get(id)?.abort();
     const controller = new AbortController();
     jobs.set(id, controller);
-    const timeout = setTimeout(() => controller.abort("timeout"), 120000);
+    const blocks =
+      msg.type === "analyze"
+        ? E.chunks(msg.text).filter((block) => block.text.trim())
+        : [];
+    const timeoutMs =
+      msg.type === "rewrite"
+        ? 120000
+        : Math.min(300000, 120000 + Math.max(0, blocks.length - 1) * 15000);
+    const timeout = setTimeout(() => controller.abort("timeout"), timeoutMs);
     try {
       if (msg.type === "rewrite")
         return await api(
@@ -307,21 +317,37 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
         );
       const all = [];
       let language = p.language === "auto" ? "pt-BR" : p.language;
-      for (const block of E.chunks(msg.text)) {
-        if (controller.signal.aborted) throw Error("Análise cancelada.");
-        if (!block.text.trim()) continue;
-        const result = await api("analyze", block, p, c, controller.signal);
-        language = result.language;
-        for (const issue of result.issues) {
-          const pos = E.locate(block.text, issue);
-          if (pos)
-            all.push({
-              ...issue,
-              start: block.start + pos.start,
-              end: block.start + pos.end,
-              language: result.language,
-              source: "ai",
-            });
+      if (blocks.length) {
+        const output = new Array(blocks.length);
+        let index = 0;
+        const workers = Array.from(
+          { length: Math.min(3, blocks.length) },
+          async () => {
+            while (index < blocks.length) {
+              if (controller.signal.aborted) throw Error("Análise cancelada.");
+              const current = index++,
+                block = blocks[current],
+                result = await api("analyze", block, p, c, controller.signal);
+              output[current] = { block, result };
+            }
+          },
+        );
+        await Promise.all(workers);
+        for (const entry of output) {
+          if (!entry) continue;
+          const { block, result } = entry;
+          language = result.language || language;
+          for (const issue of result.issues) {
+            const pos = E.locate(block.text, issue);
+            if (pos)
+              all.push({
+                ...issue,
+                start: block.start + pos.start,
+                end: block.start + pos.end,
+                language: result.language,
+                source: "ai",
+              });
+          }
         }
       }
       const merged = E.merge(

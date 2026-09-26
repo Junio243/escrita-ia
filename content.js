@@ -29,7 +29,9 @@
   const n = U.node;
   let pinned = false,
     activeTab = "review",
-    filter = "all";
+    filter = "all",
+    badgePosition = null,
+    suppressBadgeClick = false;
   function tab(name) {
     activeTab = name;
     const review = name === "review";
@@ -85,6 +87,14 @@
   function visible() {
     return issues.filter((i) => !ignored.has(signature(i)));
   }
+  function clampBadgePosition(x, y) {
+    const bw = U.badge.offsetWidth || 175,
+      bh = U.badge.offsetHeight || 32;
+    return {
+      x: Math.max(8, Math.min(x, innerWidth - bw - 8)),
+      y: Math.max(8, Math.min(y, innerHeight - bh - 8)),
+    };
+  }
   function geometry() {
     raf = 0;
     if (!current?.isConnected || !enabled || !F.safe(current)) {
@@ -101,12 +111,12 @@
       return;
     }
     U.badge.hidden = false;
-    const bw = U.badge.offsetWidth || 175,
-      bh = U.badge.offsetHeight || 32;
-    U.badge.style.left =
-      Math.max(8, Math.min(r.right - bw, innerWidth - bw - 8)) + "px";
-    U.badge.style.top =
-      Math.max(8, Math.min(r.bottom + 5, innerHeight - bh - 8)) + "px";
+    const automaticBadge = clampBadgePosition(r.right - (U.badge.offsetWidth || 175), r.bottom + 5),
+      badge = badgePosition
+        ? clampBadgePosition(badgePosition.x, badgePosition.y)
+        : automaticBadge;
+    U.badge.style.left = badge.x + "px";
+    U.badge.style.top = badge.y + "px";
     const pw = Math.min(390, innerWidth - 16),
       ph = U.panel.offsetHeight || 330;
     let x = r.right + 12,
@@ -527,6 +537,14 @@
     try {
       const r = await send({ type: "prefs" });
       prefs = r.prefs;
+      badgePosition =
+        Number.isFinite(prefs.badgePosition?.x) &&
+        Number.isFinite(prefs.badgePosition?.y)
+          ? {
+              x: prefs.badgePosition.x,
+              y: prefs.badgePosition.y,
+            }
+          : null;
       hasKey = r.hasKey;
       enabled = r.siteEnabled && prefs.assistantEnabled;
       connected = true;
@@ -566,9 +584,50 @@
   const resize = new ResizeObserver(layout);
   new ResizeObserver(layout).observe(U.panel);
   U.badge.onclick = () => {
+    if (suppressBadgeClick) {
+      suppressBadgeClick = false;
+      return;
+    }
     setPanel(U.panel.hidden);
     if (!U.panel.hidden) selectionUI();
     layout();
+  };
+  U.badge.onpointerdown = (e) => {
+    if (e.button !== 0) return;
+    const startX = e.clientX,
+      startY = e.clientY,
+      rect = U.badge.getBoundingClientRect(),
+      offsetX = startX - rect.left,
+      offsetY = startY - rect.top;
+    let moved = false;
+    U.badge.setPointerCapture(e.pointerId);
+    const move = (event) => {
+      if (
+        !moved &&
+        (Math.abs(event.clientX - startX) > 3 ||
+          Math.abs(event.clientY - startY) > 3)
+      )
+        moved = true;
+      if (!moved) return;
+      badgePosition = clampBadgePosition(
+        event.clientX - offsetX,
+        event.clientY - offsetY,
+      );
+      U.badge.style.left = badgePosition.x + "px";
+      U.badge.style.top = badgePosition.y + "px";
+      if (!U.panel.hidden && !pinned) layout();
+    };
+    const end = () => {
+      U.badge.removeEventListener("pointermove", move);
+      U.badge.removeEventListener("pointerup", end);
+      U.badge.removeEventListener("pointercancel", end);
+      if (!moved) return;
+      suppressBadgeClick = true;
+      chrome.storage.local.set({ badgePosition }).catch(() => {});
+    };
+    U.badge.addEventListener("pointermove", move);
+    U.badge.addEventListener("pointerup", end);
+    U.badge.addEventListener("pointercancel", end);
   };
   U.close.onclick = () => setPanel(false);
   U.settings.onclick = () =>
