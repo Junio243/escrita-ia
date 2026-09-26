@@ -36,6 +36,8 @@ A apresentação prioriza o editor, com painel lateral, destaques diretamente no
 
 ## Recursos
 
+Na versão 3.0.3, use **Aplicar correção** junto da sugestão ou **Aplicar esta versão** em uma reescrita para alterar o campo da página. A confirmação permanece visível durante a nova revisão. **Buscar sugestões** apenas executa a análise. Também foi corrigido um erro ao posicionar o painel abaixo de campos largos ou em telas estreitas.
+
 - Análise automática após 400 ms sem digitação.
 - Correções de ortografia, gramática, pontuação e tipografia.
 - Sugestões de estilo, tom, redundância e concisão.
@@ -141,6 +143,6 @@ As regras de retenção, privacidade e cobrança dependem do provedor escolhido.
 
 ## Versão
 
-Versão atual: **3.0.2**.
+Versão atual: **3.0.3**.
 
 Consulte [LEIA-ME.md](LEIA-ME.md) para instruções completas e [VALIDACAO.md](VALIDACAO.md) para os resultados de validação.

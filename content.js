@@ -83,6 +83,7 @@
     U.detail.hidden = true;
     selection = null;
     U.rewrite.replaceChildren();
+    U.appliedFeedback.textContent = "";
   }
   function visible() {
     return issues.filter((i) => !ignored.has(signature(i)));
@@ -125,7 +126,7 @@
       if (r.left - pw - 12 >= 8) x = r.left - pw - 12;
       else {
         x = Math.max(8, Math.min(r.left, innerWidth - pw - 8));
-        y = r.bottom + bh + 12;
+        y = r.bottom + (U.badge.offsetHeight || 32) + 12;
       }
     }
     if (pinned) {
@@ -230,14 +231,28 @@
         }),
       );
     for (const issue of list) {
+      const capture = {
+        el: current, before: lastText, start: issue.start, end: issue.end,
+      };
       const button = n("button", { class: "issue", "data-issue": issue.id }, [
         n("div", { class: "category", text: E.categories[issue.category] }),
         n("div", { class: "quote", text: issue.quote }),
         n("div", { text: issue.rule }),
+        n("div", { class: "explain", text: "Ver explicação e outras opções" }),
       ]);
       button.style.setProperty("--color", U.colors[issue.category]);
       button.onclick = () => showIssue(issue);
       U.list.append(button);
+      if (issue.replacements.length) {
+        const replacement = issue.replacements[0];
+        const apply = n("button", {
+          class: "button primary replacement quick-apply",
+          "data-quick-apply": issue.id,
+          text: `Aplicar correção: ${replacement || "remover trecho"}`,
+        });
+        apply.onclick = () => applyRange(capture, replacement);
+        U.list.append(apply);
+      }
     }
     if (current) {
       const m = E.metrics(lastText, prefs.language);
@@ -249,6 +264,9 @@
   }
   function showIssue(issue) {
     if (!current || safeText(current) !== lastText) return;
+    const capture = {
+      el: current, before: lastText, start: issue.start, end: issue.end,
+    };
     tab("review");
     setPanel(true);
     U.detail.hidden = false;
@@ -262,14 +280,10 @@
     for (const replacement of issue.replacements) {
       const b = n("button", {
         class: "button primary replacement",
-        text: replacement || "Remover trecho",
+        text: `Aplicar correção: ${replacement || "remover trecho"}`,
         "data-apply": "",
       });
-      b.onclick = () =>
-        applyRange(
-          { el: current, before: lastText, start: issue.start, end: issue.end },
-          replacement,
-        );
+      b.onclick = () => applyRange(capture, replacement);
       U.detail.append(b);
     }
     const row = n("div", { class: "toolbar" }),
@@ -338,6 +352,11 @@
         : "O editor não aceitou a alteração integralmente. Use Desfazer ou copie a sugestão.",
       ok ? "ready" : "error",
     );
+    U.appliedFeedback.textContent = ok
+      ? countApplied
+        ? "✓ Alteração aplicada no texto da página. Use Desfazer para voltar."
+        : "✓ Texto anterior restaurado."
+      : "A alteração não foi confirmada pelo editor. Confira o texto antes de continuar.";
     if (ok) {
       if (countApplied) send({ type: "applied" }).catch(() => {});
       schedule();
@@ -421,7 +440,7 @@
       for (const alternative of r.alternatives) {
         const b = n("button", {
           class: "button replacement",
-          text: alternative,
+          text: `Aplicar esta versão: ${alternative}`,
           "data-alternative": "",
         });
         b.onclick = () => applyRange(capture, alternative);

@@ -188,15 +188,25 @@ const profile = process.env.TEST_PROFILE || path.resolve("work/chrome-v2-test");
       "Nós vai conversar com voce.",
     );
     await open();
-    await page.locator(".issue").filter({ hasText: "voce" }).click();
-    await page.locator("[data-apply]").click();
+    const statisticsPage = await context.newPage();
+    await statisticsPage.goto("chrome-extension://" + id + "/popup.html");
+    await statisticsPage.locator("#diagnostic").filter({ hasText: "Conectado" }).waitFor({ state: "attached" });
+    const appliedBefore = Number(await statisticsPage.locator("#applied").innerText());
+    await page.locator("[data-quick-apply]").filter({ hasText: "Aplicar correção: você" }).click();
     assert.equal(
       await page.locator("#plain").inputValue(),
       "Nós vai conversar com você.",
     );
-    console.log(
-      "PASS structured analysis, anchored spelling correction by click",
+    await page.locator(".panel .status").filter({ hasText: "Sugestão aplicada" }).waitFor();
+    await statisticsPage.reload();
+    await statisticsPage.waitForFunction((expected) =>
+      Number(document.querySelector("#applied").textContent) === expected,
+      appliedBefore + 1,
     );
+    await statisticsPage.close();
+    await ready();
+    assert.match(await page.locator('.applied-feedback').innerText(), /Alteração aplicada no texto da página/);
+    console.log("PASS one-click correction changes page text, confirms success and increments popup counter");
     await page.getByRole("button", { name: "Desfazer", exact: true }).click();
     assert.equal(
       await page.locator("#plain").inputValue(),
@@ -237,21 +247,39 @@ const profile = process.env.TEST_PROFILE || path.resolve("work/chrome-v2-test");
     await page.getByRole("tab", { name: "Reescrita" }).click();
     await page.getByRole("button", { name: "Gerar alternativas" }).click();
     await page
-      .getByRole("button", { name: "Podemos conversar?", exact: true })
+      .getByRole("button", { name: "Aplicar esta versão: Podemos conversar?", exact: true })
       .waitFor();
     await page.getByRole("button", { name: "Gerar alternativas" }).click();
     await page
-      .getByRole("button", { name: "Podemos conversar?", exact: true })
+      .getByRole("button", { name: "Aplicar esta versão: Podemos conversar?", exact: true })
       .waitFor();
     assert.equal(await page.locator("[data-alternative]").count(), 3);
     await page
-      .getByRole("button", { name: "Podemos conversar?", exact: true })
+      .getByRole("button", { name: "Aplicar esta versão: Podemos conversar?", exact: true })
       .click();
     assert.equal(
       await page.locator("#plain").inputValue(),
       "Podemos conversar?",
     );
     console.log("PASS selected text rewrite");
+    await page.locator('#prompt-textarea').fill('Antes. Vamos conversar hoje. Depois.');
+    await ready();
+    await page.locator('#prompt-textarea').evaluate((el) => {
+      el.focus();
+      const range = document.createRange();
+      const text = document.createTreeWalker(el, NodeFilter.SHOW_TEXT).nextNode();
+      range.setStart(text, 7);
+      range.setEnd(text, 28);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+    });
+    await open();
+    await page.getByRole('tab', { name: 'Reescrita' }).click();
+    await page.getByRole('button', { name: 'Gerar alternativas' }).click();
+    await page.getByRole('button', { name: 'Aplicar esta versão: Podemos conversar?', exact: true }).click();
+    assert.equal(await page.locator('#prompt-textarea').innerText(), 'Antes. Podemos conversar? Depois.');
+    console.log('PASS rewrite applies only the selected range in a rich editor');
     await worker.evaluate(() => {
       testState.delay = 1600;
     });
@@ -521,7 +549,7 @@ const profile = process.env.TEST_PROFILE || path.resolve("work/chrome-v2-test");
     await page.getByRole("button", { name: "Usar campo inteiro" }).click();
     await page.getByRole("button", { name: "Gerar alternativas" }).click();
     await page
-      .getByRole("button", { name: "Podemos conversar?", exact: true })
+      .getByRole("button", { name: "Aplicar esta versão: Podemos conversar?", exact: true })
       .waitFor();
     assert.equal(await page.locator("[data-alternative]").count(), 3);
     if (process.env.SCREENSHOT_PATH)
@@ -533,6 +561,10 @@ const profile = process.env.TEST_PROFILE || path.resolve("work/chrome-v2-test");
       });
     await page.getByRole("tab", { name: "Revisão", exact: true }).click();
     await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForFunction(() => {
+      const box = document.querySelector('[data-escrita-root]').shadowRoot.querySelector('.panel').getBoundingClientRect();
+      return box.left >= 0 && box.right <= innerWidth + 1;
+    });
     const box = await page.locator(".panel").boundingBox();
     assert(box.x >= 0 && box.x + box.width <= 391);
     console.log("PASS full-field rewrite and mobile panel bounds");

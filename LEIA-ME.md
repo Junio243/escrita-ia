@@ -1,6 +1,6 @@
-# Escrita IA 3.0.2
+# Escrita IA 3.0.3
 
-Assistente de escrita integrado aos campos do navegador. A análise começa após 600 milissegundos sem digitação. As sugestões aparecem grifadas; **nenhuma alteração é aplicada sem seu clique**.
+Assistente de escrita integrado aos campos do navegador. A análise começa após 400 milissegundos sem digitação. As sugestões aparecem grifadas; **nenhuma alteração é aplicada sem seu clique**.
 
 ## Atualizar a instalação existente
 
@@ -8,13 +8,13 @@ Se os arquivos da pasta instalada já foram atualizados por este atendimento:
 
 1. Abra `chrome://extensions`.
 2. No cartão **Escrita IA**, clique em **Recarregar** (seta circular). Mantenha o **Modo do desenvolvedor** ligado.
-3. Confirme a versão **3.0.2** e recarregue os sites já abertos.
+3. Confirme a versão **3.0.3** e recarregue os sites já abertos.
 
 Ao manter a mesma pasta, a chave e as preferências existentes permanecem no armazenamento da extensão. A preferência antiga de aplicação automática continua migrada para sugestões por clique.
 
 ## Instalar pelo ZIP
 
-1. Extraia **escrita-ia-3.0.2.zip** em uma pasta permanente.
+1. Extraia **escrita-ia-3.0.3.zip** em uma pasta permanente.
 2. O `manifest.json` está diretamente na raiz do ZIP. Selecione exatamente a pasta onde ele aparece, sem selecionar a pasta acima nem o arquivo ZIP.
 3. Em `chrome://extensions`, ative **Modo do desenvolvedor** e escolha **Carregar sem compactação**.
 4. Em **Detalhes → Acesso ao site**, escolha **Em todos os sites** para permitir a detecção automática.
@@ -48,8 +48,8 @@ Para proteger a credencial, URLs remotas exigem HTTPS. HTTP é permitido somente
 - Pressione `Alt+Shift+E` com um campo ativo para abrir ou fechar o painel sem usar o mouse.
 - Vermelho indica ortografia; âmbar, gramática e pontuação; azul, tipografia; violeta, estilo e tom. Os cartões também identificam a categoria por escrito.
 - Clique no grifo ou use Tab e Enter. Passar o mouse não abre o painel. A aba Revisão mostra a regra, uma explicação e as substituições.
-- Clique em uma substituição para aplicá-la. **Ignorar** oculta a ocorrência até a próxima edição. **Desfazer** restaura a última alteração se o campo não tiver mudado.
-- Para reescrever, selecione um trecho de até 6.000 caracteres, abra o indicador e a aba **Reescrita**. Ou clique em **Usar campo inteiro**. Escolha o estilo e clique em **Gerar alternativas**. Novas gerações substituem as alternativas anteriores.
+- Clique em **Aplicar correção** junto de uma sugestão para substituir o trecho na página. Clicar no cartão abre a explicação. **Buscar sugestões** apenas analisa o texto. A confirmação de aplicação permanece visível enquanto a revisão seguinte é executada. **Ignorar** oculta a ocorrência até a próxima edição. **Desfazer** restaura a última alteração se o campo não tiver mudado.
+- Para reescrever, selecione um trecho de até 6.000 caracteres, abra o indicador e a aba **Reescrita**. Ou clique em **Usar campo inteiro**. Escolha o estilo e clique em **Gerar alternativas**, depois em **Aplicar esta versão** na opção desejada. Novas gerações substituem as alternativas anteriores.
 - Use **Fixar painel** para manter o estúdio à direita da tela. **Esc** fecha o painel. Os filtros separam as sugestões por categoria.
 - **Aplicar correções locais** corrige repetições e espaços em uma etapa reversível. Quando houver ocorrências sobrepostas, a revisão seguinte apresenta as restantes.
 - Nas Configurações, escolha idioma, tema e **Modo Exigente**. A detecção automática usa PT-BR para português e en-US para inglês; PT-PT e en-GB podem ser selecionados explicitamente.

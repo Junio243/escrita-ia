@@ -119,13 +119,16 @@
         role: "status",
         "aria-live": "polite",
       }),
+      appliedFeedback = node("div", {
+        class: "explain applied-feedback", role: "status", "aria-live": "polite",
+      }),
       tools = node("div", { class: "toolbar" }),
       settings = node(
         "button",
         { class: "button", "aria-label": "Configurações" },
         [icon("settings")],
       ),
-      retry = node("button", { class: "button", text: "Revisar" }),
+      retry = node("button", { class: "button", text: "Buscar sugestões" }),
       undo = node("button", { class: "button", text: "Desfazer" }),
       list = node("div", { class: "list" }),
       detail = node("div", { class: "detail" }),
@@ -159,9 +162,14 @@
       whole,
       rewrite,
     );
-    reviewPane.append(filters, list, detail, localApply);
+    reviewPane.append(
+      node("p", {
+        class: "rewrite-intro",
+        text: "Clique em Aplicar correção para substituir o trecho na página. Você pode desfazer depois.",
+      }), filters, list, detail, localApply,
+    );
     tools.append(retry, undo, settings);
-    body.append(status, reviewPane, rewritePane, tools, metrics);
+    body.append(appliedFeedback, status, reviewPane, rewritePane, tools, metrics);
     panel.append(head, tabs, body);
     ui.append(marks, badge, panel);
     root.append(css, ui);
@@ -191,6 +199,7 @@
       panel,
       body,
       status,
+      appliedFeedback,
       settings,
       retry,
       undo,

@@ -1,6 +1,16 @@
-# Relatório de validação — Escrita IA 3.0.0
+# Relatório de validação — Escrita IA
 
 Data: 25 de setembro de 2026.
+
+## Correção 3.0.3 — aplicação de sugestões (26 de setembro de 2026)
+
+- `npm test`: 36 testes aprovados.
+- `tests/browser.cjs`: execução completa aprovada com a extensão carregada em um perfil de teste do Chrome e respostas de IA simuladas.
+- O botão direto **Aplicar correção** substitui o trecho na página, mostra confirmação e incrementa o contador no popup. A confirmação permanece após a revisão seguinte.
+- Reescrita de seleção em textarea e em contenteditable verificada; o texto fora da seleção permanece intacto. A correção em editor rico preserva a formatação não alterada.
+- O teste de tela estreita expôs `bh is not defined` no posicionamento do painel abaixo do campo. Corrigido e verificado em 390 px, sem erros JavaScript na página.
+
+Os cenários de ChatGPT, Instagram, Facebook, LinkedIn e X nesta suíte são fixtures sintéticas; a aprovação não garante compatibilidade com toda versão dos editores desses serviços.
 
 ## Correção 3.0.1 — Google AI Studio
 
