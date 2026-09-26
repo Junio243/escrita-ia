@@ -325,6 +325,13 @@ test("automatic mode prefers Chat Completions externally and falls back to Respo
   );
   assert.equal(calls, n + 2);
   assert(lastRequest.url.endsWith("/responses"));
+  const learned = calls;
+  assert.equal(
+    (await send({ type: "analyze", text: "Outro trecho para revisar." })).ok,
+    true,
+  );
+  assert.equal(calls, learned + 1);
+  assert(lastRequest.url.endsWith("/responses"));
   chatUnsupported = false;
   local.providerUrl = "https://api.openai.com/v1";
   local.apiKey = "sk-test";

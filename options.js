@@ -14,6 +14,10 @@ const status = (text, state = "ready") => {
   $("status").dataset.state = state;
   $("status").setAttribute("aria-busy", String(state === "loading"));
 };
+const connectionStep = (text, state = "ready") => {
+  $("connection-steps").textContent = text;
+  $("connection-steps").dataset.state = state;
+};
 let busy = false;
 function lock(value) {
   busy = value;
@@ -206,16 +210,20 @@ $("test").onclick = async () => {
   if (busy) return;
   lock(true);
   status("Conectando ao provedor e testando com uma frase de exemplo…", "loading");
+  connectionStep("Salvando as configurações…", "loading");
   try {
     await savePreferences(false);
+    connectionStep("Enviando uma frase de teste ao modelo. Isso pode levar alguns segundos…", "loading");
     const r = await chrome.runtime.sendMessage({
       type: "analyze",
       text: "Esta é uma frase de teste.",
     });
     if (!r.ok) throw Error(r.error);
     status("Conexão confirmada. A API retornou uma análise válida.", "success");
+    connectionStep("Conexão testada: o modelo respondeu. Você já pode revisar textos.", "success");
   } catch (e) {
     status(e.message, "error");
+    connectionStep("Não foi possível confirmar a conexão. Confira a mensagem acima e tente novamente.", "error");
   } finally {
     lock(false);
   }
