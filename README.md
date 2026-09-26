@@ -36,7 +36,7 @@ A apresentação prioriza o editor, com painel lateral, destaques diretamente no
 
 ## Recursos
 
-- Análise automática após 600 ms sem digitação.
+- Análise automática após 400 ms sem digitação.
 - Correções de ortografia, gramática, pontuação e tipografia.
 - Sugestões de estilo, tom, redundância e concisão.
 - Reescrita clara, concisa, formal, fluida ou persuasiva.
@@ -69,6 +69,8 @@ A extensão aceita serviços compatíveis com a API da OpenAI. A configuração 
 - chave da API com qualquer formato;
 - nome exato do modelo;
 - Responses API, Chat Completions ou detecção automática.
+
+O botão de revisão pode ser arrastado com o mouse e mantém a posição escolhida. O teste de conexão mostra cada etapa e só confirma sucesso após uma resposta válida do modelo. Quando um formato de resposta funciona, a extensão o prioriza nas próximas solicitações para evitar tentativas desnecessárias. APIs nativas com contratos diferentes dos formatos acima ainda exigem adaptadores próprios.
 
 Servidores locais em `localhost`, `127.0.0.1` e `[::1]` podem funcionar sem chave. Cada credencial é vinculada à URL em que foi cadastrada para impedir seu envio acidental a outro provedor.
 

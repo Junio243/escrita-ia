@@ -52,7 +52,7 @@
     message = text;
     phase = state;
     U.status.textContent = text;
-    U.badge.title = text;
+    U.badge.title = `${text} Arraste para mover o botão.`;
     U.badge.dataset.state = state;
     U.badgeText.textContent =
       state === "loading"
@@ -437,7 +437,7 @@
   }
   function schedule() {
     clearTimeout(timer);
-    if (enabled && !composing && current) timer = setTimeout(analyze, 600);
+    if (enabled && !composing && current) timer = setTimeout(analyze, 400);
   }
   async function analyze() {
     if (!current?.isConnected || !enabled || composing) return;
@@ -623,6 +623,7 @@
       U.badge.removeEventListener("pointercancel", end);
       if (!moved) return;
       suppressBadgeClick = true;
+      setTimeout(() => { suppressBadgeClick = false; }, 0);
       chrome.storage.local.set({ badgePosition }).catch(() => {});
     };
     U.badge.addEventListener("pointermove", move);

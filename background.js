@@ -13,6 +13,7 @@ const secured = chrome.storage.local.setAccessLevel({
 });
 const jobs = new Map(),
   cache = new Map(),
+  workingFormats = new Map(),
   epochs = new Map(),
   stats = { analyses: 0, issues: 0, applied: 0 };
 async function settings() {
@@ -108,6 +109,7 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.storage.onChanged.addListener((changes, area) => {
   if (!["local", "session"].includes(area)) return;
   cache.clear();
+  workingFormats.clear();
   for (const job of jobs.values()) job.abort();
   chrome.tabs
     .query({ url: ["https://*/*", "http://*/*"] })
@@ -132,6 +134,7 @@ async function api(operation, input, prefs, credential, signal) {
     format: credential.format,
   });
   if (cache.has(cacheKey)) return cache.get(cacheKey);
+  const formatKey = `${credential.url}|${credential.model}|${credential.format}`;
   const unsupported = new Set([400, 404, 405, 415, 422, 501]),
     endpointMissing = new Set([404, 405, 501]),
     attempts = [],
@@ -139,6 +142,10 @@ async function api(operation, input, prefs, credential, signal) {
   for (const transport of transportOrder(credential.url, credential.format))
     for (const structure of ["strict", "json", "plain"])
       attempts.push({ transport, structure });
+  const known = workingFormats.get(formatKey);
+  if (known) attempts.sort((a, b) =>
+    Number(b.transport === known.transport && b.structure === known.structure) -
+    Number(a.transport === known.transport && a.structure === known.structure));
   let lastError;
   for (const attempt of attempts) {
     if (unavailable.has(attempt.transport)) continue;
@@ -185,6 +192,8 @@ async function api(operation, input, prefs, credential, signal) {
         throw Error(reason);
       }
       if (unsupported.has(res.status)) {
+        if (known?.transport === attempt.transport && known?.structure === attempt.structure)
+          workingFormats.delete(formatKey);
         if (endpointMissing.has(res.status)) unavailable.add(attempt.transport);
         lastError = Error(
           `Formato ${attempt.transport}/${attempt.structure} não aceito.`,
@@ -208,6 +217,7 @@ async function api(operation, input, prefs, credential, signal) {
       if (signal.aborted)
         throw new DOMException("Análise cancelada.", "AbortError");
       cache.set(cacheKey, result);
+      workingFormats.set(formatKey, attempt);
       if (cache.size > 50) cache.delete(cache.keys().next().value);
       return result;
     } catch (e) {

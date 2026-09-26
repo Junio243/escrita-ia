@@ -231,6 +231,10 @@ a {
 #status[data-state="loading"] {
   color: var(--muted);
 }
+.connection-steps { font-size: 12px; color: var(--muted); line-height: 1.6; }
+.connection-steps[data-state="loading"] { color: var(--accent); }
+.connection-steps[data-state="success"] { color: #1f8a52; }
+.connection-steps[data-state="error"] { color: #b94736; }
 #status[data-state="loading"]::before {
   content: "";
   display: inline-block;
