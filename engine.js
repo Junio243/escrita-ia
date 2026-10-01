@@ -29,7 +29,7 @@
   }
   // ── Regras PT-BR determinísticas (offline, implementação própria) ──
   const ACCENTS=new Map(Object.entries({
-    'voce':'você','voçê':'você','voces':'vocês','nao':'não','naum':'não','ate':'até','apos':'após','tres':'três','sao':'são','e':'é',
+    'voce':'você','voçê':'você','voces':'vocês','nao':'não','naum':'não','ate':'até','apos':'após','tres':'três','sao':'são',
     'cafe':'café','facil':'fácil','dificil':'difícil','possivel':'possível','possiveis':'possíveis','menas':'menos',
     'horario':'horário','horarios':'horários','necessario':'necessário','necessaria':'necessária','necessarios':'necessários','necessarias':'necessárias',
     'unico':'único','unica':'única','unicos':'únicos','unicas':'únicas','ultimo':'último','ultima':'última','ultimos':'últimos','ultimas':'últimas',
