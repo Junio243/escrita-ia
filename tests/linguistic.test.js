@@ -8,6 +8,9 @@ test('corpus covers every category and every configured language variant',()=>{
   assert.deepEqual([...locales].sort(),Object.keys(E.languages).filter(x=>x!=='auto').sort());
   assert.deepEqual([...new Set(corpus.cases.map(x=>x.category).filter(Boolean))].sort(),Object.keys(E.categories).sort());
 });
+test('the conjunction e is not mistaken for the verb é',()=>{
+  assert.deepEqual(E.accentIssues('A maçã e a pera são boas.'),[]);
+});
 test('unicode samples survive request serialization without normalization or translation',()=>{
   for(const [language,text]of Object.entries(corpus.samples)){
     const r=requestBody('analyze',{text},{language,picky:false},'gpt-4.1-mini');assert.equal(JSON.parse(r.input).text,text);
