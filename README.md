@@ -26,7 +26,7 @@ Esta versão muda a extensão instalada no Chrome: painel, popup e configuraçõ
 
 **[Abrir demonstração interativa](https://Junio243.github.io/escrita-ia/)** · [Baixar extensão](https://github.com/Junio243/escrita-ia/archive/refs/heads/main.zip)
 
-O novo **Estúdio de escrita** tem exemplos de ideia, e-mail, trabalho e redes sociais, tema claro/escuro, modo foco (saída com `Esc`), contagem de palavras, estimativa de leitura e cópia do texto. Ao trocar um exemplo, **Desfazer** recupera o rascunho anterior. Apenas a preferência de tema é salva; o texto não persiste ao recarregar a página.
+O novo **Estúdio de escrita** tem exemplos de ideia, e-mail, trabalho e redes sociais, tema claro/escuro, modo foco (saída com `Esc`), contagem de palavras, estimativa de leitura, revisão local de português e cópia do texto. Ao trocar um exemplo, **Desfazer** recupera o rascunho anterior. Apenas a preferência de tema é salva; o texto não persiste ao recarregar a página.
 
 A apresentação prioriza o editor, com painel lateral, destaques diretamente no texto e filtros por repetições ou espaços duplicados. **Ver no texto** seleciona a ocorrência; **Limpar texto** permite recomeçar e recuperar o conteúdo com **Desfazer**. A organização visual tem como referência o [LanguageTool](https://languagetool.org/pt-BR), com identidade, implementação e regras próprias da Escrita IA.
 
@@ -45,7 +45,7 @@ Na versão 3.0.3, use **Aplicar correção** junto da sugestão ou **Aplicar est
 - Aplicação de cada sugestão com um clique e opção de desfazer.
 - Atalho `Alt+Shift+E` para abrir/fechar o painel no campo ativo.
 - Estatísticas da sessão (análises, ocorrências, sugestões aplicadas) no diagnóstico.
-- Regra local de palavra duplicada, sem depender da IA.
+- Revisão local sem IA para palavras e espaços duplicados, acentuação e regras selecionadas de gramática do português.
 - Dicionário pessoal separado por idioma.
 - Modo Exigente para revisão estilística mais rigorosa.
 - Contadores de palavras e caracteres dentro do campo.
