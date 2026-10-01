@@ -135,6 +135,16 @@ const types = {
     console.log(
       "PASS demo uses real rules, applies only on click and supports undo",
     );
+    await writing.fill("A minha familia e eu estudamos.");
+    assert.equal(await page.locator(".suggestion").count(), 1);
+    assert.equal(await page.locator(".suggestion").getAttribute("data-category"), "spelling");
+    await page.getByRole("button", { name: /Aplicar: Acentuação/ }).click();
+    assert.equal(await writing.inputValue(), "A minha família e eu estudamos.");
+    await writing.fill("Nós vai amanhã.");
+    assert.equal(await page.locator(".suggestion").count(), 1);
+    assert.equal(await page.locator(".suggestion").getAttribute("data-category"), "grammar");
+    await page.getByRole("button", { name: /Aplicar: Concordância verbal/ }).click();
+    assert.equal(await writing.inputValue(), "Nós vamos amanhã.");
     await writing.fill("Novo texto sem problemas.");
     assert.equal(await page.locator("#undo").isDisabled(), true);
     assert.equal(await page.locator(".suggestion").count(), 0);
