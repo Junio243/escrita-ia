@@ -65,7 +65,7 @@
     document.querySelector("#reading").textContent = metrics.words
       ? `${Math.max(1, Math.ceil(metrics.words / 200))} min de leitura`
       : "Sua página em branco";
-    const issues = engine.merge(engine.localIssues(text), text);
+    const issues = engine.merge(engine.allLocalIssues(text), text);
     highlight(text, issues);
     const visibleIssues = issues.filter(
       (issue) => activeFilter === "all" || issue.category === activeFilter,
@@ -86,7 +86,7 @@
       (issues.length
         ? `${issues.length} sugestões locais. Ajuste o que fizer sentido para você.`
         : text.trim()
-          ? "Nenhum espaço ou palavra duplicada encontrado. A revisão com IA está disponível na extensão."
+          ? "Nenhuma sugestão local encontrada. A revisão avançada com IA está disponível na extensão."
           : "Comece a escrever para ver as sugestões.");
     suggestions.replaceChildren();
     for (const issue of visibleIssues.slice(0, 20)) {
