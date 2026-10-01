@@ -1,4 +1,4 @@
-# Escrita IA 3.0.3
+# Escrita IA 3.1.0
 
 Assistente de escrita integrado aos campos do navegador. A análise começa após 400 milissegundos sem digitação. As sugestões aparecem grifadas; **nenhuma alteração é aplicada sem seu clique**.
 
@@ -59,7 +59,7 @@ Para proteger a credencial, URLs remotas exigem HTTPS. HTTP é permitido somente
 
 Abra o ícone da extensão e expanda **Conexão e diagnóstico**. Ele informa versão, URL, formato, modelo, presença de credencial, serviço de fundo, permissão do site, campo detectado e as estatísticas da sessão (análises, ocorrências encontradas e sugestões aplicadas). Clique em **Verificar e reconectar**. Se necessário, recarregue a página e confira o botão **Erros** em `chrome://extensions`.
 
-Sem um provedor pronto, o indicador continua disponível e a verificação local de espaços duplicados funciona. Falhas da API nunca são apresentadas como “texto correto”. **Testar conexão** faz uma chamada real com uma frase de exemplo e pode gerar cobrança.
+Sem um provedor pronto, o indicador e a revisão local continuam disponíveis: repetições e espaços são verificados em qualquer idioma; ao selecionar Português · Brasil ou Português · Portugal, também há sugestões para acentuação e algumas regras gramaticais. Com o idioma em detecção automática, as regras específicas de português não são aplicadas sem confirmação do idioma. Falhas da API nunca são apresentadas como “texto correto”. **Testar conexão** faz uma chamada real com uma frase de exemplo e pode gerar cobrança.
 
 ## Privacidade e custos
 

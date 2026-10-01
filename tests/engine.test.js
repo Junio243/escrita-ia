@@ -38,6 +38,23 @@ test('duplicate issues survive the merge pipeline',()=>{
   assert.equal(merged[0].source,'local');
 });
 
+test('Portuguese local review catches accents and selected grammar rules',()=>{
+  const accent=E.allLocalIssues('A minha familia e eu estudamos.','pt-BR');
+  assert.equal(accent.length,1);
+  assert.equal(accent[0].rule,'Acentuação');
+  assert.equal(accent[0].quote,'familia');
+  const grammar=E.allLocalIssues('Nós vai amanhã.','pt-BR');
+  assert.equal(grammar.length,1);
+  assert.equal(grammar[0].rule,'Concordância verbal');
+  assert.deepEqual(grammar[0].replacements,['Nós vamos']);
+});
+
+test('Portuguese-only local rules do not leak into other or automatic languages',()=>{
+  assert.equal(E.allLocalIssues('Nós vai amanhã.','en-US').length,0);
+  assert.equal(E.allLocalIssues('Nós vai amanhã.','auto').length,0);
+  assert.equal(E.allLocalIssues('teste teste','auto').length,1);
+});
+
 test('metrics and chunks handle empty input',()=>{
   assert.deepEqual(E.metrics(''),{words:0,characters:0});
   assert.deepEqual(E.chunks(''),[]);

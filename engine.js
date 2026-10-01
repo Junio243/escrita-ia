@@ -99,7 +99,8 @@
     return [...spacing,...repeated];
   }
   function allLocalIssues(text,locale='pt-BR'){
-    return [...localIssues(text),...accentIssues(text,locale),...ptIssues(text)];
+    const portuguese=locale==='pt-BR'||locale==='pt-PT';
+    return [...localIssues(text),...accentIssues(text,locale),...(portuguese?ptIssues(text):[])];
   }
   function merge(issues,text,dictionary={},locale='pt-BR') {
     const seen=new Set();

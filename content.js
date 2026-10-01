@@ -465,7 +465,7 @@
       rev = ++revision;
     lastText = text;
     issues = E.merge(
-      E.localIssues(text),
+      E.allLocalIssues(text, prefs.language),
       text,
       prefs.dictionary,
       prefs.language === "auto" ? "pt-BR" : prefs.language,

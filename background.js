@@ -361,7 +361,7 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
         }
       }
       const merged = E.merge(
-        [...E.localIssues(msg.text), ...all],
+        [...E.allLocalIssues(msg.text, language), ...all],
         msg.text,
         p.dictionary,
         language,

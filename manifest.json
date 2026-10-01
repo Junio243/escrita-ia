@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Escrita IA",
-  "version": "3.0.3",
+  "version": "3.1.0",
   "description": "Assistente de escrita com provedores compatíveis com OpenAI, sugestões e correções nos campos do navegador.",
   "minimum_chrome_version": "112",
   "permissions": ["storage", "activeTab", "scripting"],

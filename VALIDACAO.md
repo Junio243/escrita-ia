@@ -1,5 +1,13 @@
 # Relatório de validação — Escrita IA
 
+Data: 1º de outubro de 2026.
+
+## Versão 3.1.0 — revisão local em português
+
+- A extensão aplica regras determinísticas de repetição e espaçamento em qualquer idioma e regras selecionadas de acentuação, concordância, regência e estilo quando o idioma configurado é português.
+- A detecção automática não executa regras específicas de português; a análise da IA aplica as regras locais correspondentes ao idioma retornado.
+- Cobertura de regressão para a conjunção “e” (sem sugerir “é”), acentuação, concordância verbal e isolamento por idioma.
+
 Data: 25 de setembro de 2026.
 
 ## Correção 3.0.3 — aplicação de sugestões (26 de setembro de 2026)

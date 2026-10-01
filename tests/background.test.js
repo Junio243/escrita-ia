@@ -198,6 +198,14 @@ test("options page and inherited frames may test and analyze", async () => {
     true,
   );
 });
+test("AI analysis combines Portuguese-only deterministic checks", async () => {
+  local.language = "pt-BR";
+  const result = await send({ type: "analyze", text: "Nós vai amanhã." });
+  assert.equal(result.ok, true);
+  assert.equal(result.issues.length, 1);
+  assert.equal(result.issues[0].rule, "Concordância verbal");
+  assert.deepEqual(result.issues[0].replacements, ["Nós vamos"]);
+});
 test("cache reuses identical blocks and reparses changes", async () => {
   const n = calls;
   assert.equal(
