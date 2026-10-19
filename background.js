@@ -140,12 +140,28 @@ async function api(operation, input, prefs, credential, signal) {
     attempts = [],
     unavailable = new Set();
   for (const transport of transportOrder(credential.url, credential.format))
+    // Preferred order: strict first, then the cheaper fallbacks. A parse
+    // failure in one structure still allows trying the next ones below.
     for (const structure of ["strict", "json", "plain"])
       attempts.push({ transport, structure });
   const known = workingFormats.get(formatKey);
-  if (known) attempts.sort((a, b) =>
-    Number(b.transport === known.transport && b.structure === known.structure) -
-    Number(a.transport === known.transport && a.structure === known.structure));
+  if (known) {
+    // Known-good format goes first; skip structures that already failed for
+    // this exact provider/model/format combination to avoid wasted requests.
+    attempts.sort((a, b) =>
+      Number(b.transport === known.transport && b.structure === known.structure) -
+      Number(a.transport === known.transport && a.structure === known.structure));
+    if (known.failed?.length) {
+      for (let i = attempts.length - 1; i >= 0; i--) {
+        const a = attempts[i];
+        if (
+          a.transport === known.transport &&
+          known.failed.includes(a.structure)
+        )
+          attempts.splice(i, 1);
+      }
+    }
+  }
   let lastError;
   for (const attempt of attempts) {
     if (unavailable.has(attempt.transport)) continue;
@@ -222,6 +238,13 @@ async function api(operation, input, prefs, credential, signal) {
       return result;
     } catch (e) {
       lastError = e;
+      // Remember structures that returned HTTP 200 but unparsable bodies so
+      // future requests skip them and go straight to a working format.
+      if (workingFormats.get(formatKey)?.transport === attempt.transport) {
+        const failed = new Set(workingFormats.get(formatKey).failed || []);
+        failed.add(attempt.structure);
+        workingFormats.set(formatKey, { ...attempt, failed: [...failed] });
+      }
     }
   }
   throw lastError || Error("O provedor não oferece um formato compatível.");
@@ -275,11 +298,14 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
       )
         throw Error("Termo inválido.");
       const p = await settings(),
-        terms = p.dictionary[msg.language] || [];
+        terms = [...(p.dictionary[msg.language] || [])];
       if (!terms.some((w) => E.norm(w) === E.norm(msg.word)))
         terms.push(msg.word.trim());
       if (terms.length > 1000)
         throw Error("Limite de 1.000 termos por idioma.");
+      // Invalidate cached analyses so the new term takes effect immediately.
+      cache.clear();
+      for (const job of jobs.values()) job.abort();
       await chrome.storage.local.set({
         dictionary: { ...p.dictionary, [msg.language]: terms },
       });

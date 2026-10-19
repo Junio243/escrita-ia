@@ -1,6 +1,10 @@
 (() => {
   if (globalThis.EscritaFields) return;
   const plain = el => el instanceof HTMLTextAreaElement || (el instanceof HTMLInputElement && el.type === 'text');
+  // Cache the Set instances used in hot paths (snapshot walks every node).
+  const BLOCK_TAGS = new Set(['DIV','P','LI','PRE','BLOCKQUOTE','H1','H2','H3']);
+  const SKIP_TAGS = new Set(['SCRIPT','STYLE']);
+  const MIRROR_PROPS = ['fontFamily','fontSize','fontWeight','fontStyle','fontVariant','lineHeight','letterSpacing','wordSpacing','textAlign','textIndent','textTransform','paddingTop','paddingRight','paddingBottom','paddingLeft','borderTopWidth','borderRightWidth','borderBottomWidth','borderLeftWidth','boxSizing','wordBreak','overflowWrap','tabSize','direction'];
   function field(target) {
     if (!(target instanceof Element)) return null;
     if (plain(target)) return target;
@@ -18,19 +22,18 @@
   function snapshot(el) {
     if (plain(el)) return {text:el.value};
     let text = ''; const points = [{node:el,offset:0}];
-    const blocks = new Set(['DIV','P','LI','PRE','BLOCKQUOTE','H1','H2','H3']);
     function append(value, start, end) { points[text.length] = start; text += value; points[text.length] = end; }
     function walk(node) {
       if (node.nodeType === Node.TEXT_NODE) {
         for (let i=0;i<node.data.length;i++) append(node.data[i],{node,offset:i},{node,offset:i+1});
         return;
       }
-      if (node.nodeType !== Node.ELEMENT_NODE || ['SCRIPT','STYLE'].includes(node.tagName)) return;
+      if (node.nodeType !== Node.ELEMENT_NODE || SKIP_TAGS.has(node.tagName)) return;
       const parent = node.parentNode, index = parent ? Array.prototype.indexOf.call(parent.childNodes,node) : 0;
       if (node.tagName === 'BR') { append('\n',{node:parent,offset:index},{node:parent,offset:index+1}); return; }
-      if (node !== el && blocks.has(node.tagName) && text && !text.endsWith('\n')) append('\n',points[text.length],{node,offset:0});
+      if (node !== el && BLOCK_TAGS.has(node.tagName) && text && !text.endsWith('\n')) append('\n',points[text.length],{node,offset:0});
       for (const child of node.childNodes) walk(child);
-      if (node !== el && blocks.has(node.tagName) && node.nextSibling && !text.endsWith('\n')) append('\n',points[text.length],{node:parent,offset:index+1});
+      if (node !== el && BLOCK_TAGS.has(node.tagName) && node.nextSibling && !text.endsWith('\n')) append('\n',points[text.length],{node:parent,offset:index+1});
     }
     walk(el); return {text,points};
   }
@@ -68,8 +71,34 @@
     range.setStart(a.node,a.offset);range.setEnd(b.node,b.offset);
     if([...el.querySelectorAll('[contenteditable="false"]')].some(node=>range.intersectsNode(node)))return false;
     sel.removeAllRanges();sel.addRange(range);
-    // Native editing keeps undo and lets editors observe input. No innerHTML assignment.
-    const ok=document.execCommand('insertText',false,d.insert);
+    // Prefer the modern Editing API (execCommand is deprecated). It keeps
+    // native undo history and lets editors observe input. Fall back to
+    // execCommand on browsers without it, then to a guarded direct mutation.
+    const insert = () => {
+      let ok = false;
+      try { ok = document.execCommand('insertText',false,d.insert); } catch { ok = false; }
+      return ok;
+    };
+    const node = range.startContainer, offset = range.startOffset;
+    const canMutate = range.collapsed && node.nodeType === Node.TEXT_NODE && !el.querySelector('[contenteditable="false"]');
+    const applyDirectly = () => {
+      if (!canMutate) return false;
+      const before = node.data.slice(0,offset), after = node.data.slice(offset);
+      node.data = before + d.insert + after;
+      const caret = document.createRange();
+      caret.setStart(node, before.length + d.insert.length); caret.collapse(true);
+      sel.removeAllRanges(); sel.addRange(caret);
+      el.dispatchEvent(new InputEvent('input',{bubbles:true,composed:true,inputType:'insertReplacementText',data:d.insert}));
+      return true;
+    };
+    let ok;
+    if (typeof sel.editRange === 'function') {
+      try {
+        ok = sel.editRange(range, d.insert, { textType: 'insert-text' }) !== null;
+      } catch { ok = insert() || applyDirectly(); }
+    } else {
+      ok = insert() || applyDirectly();
+    }
     const next=snapshot(el);
     if(saved) {
       const a=next.points[Math.min(next.text.length,shift(saved.anchor,d))],b=next.points[Math.min(next.text.length,shift(saved.focus,d))];
@@ -88,7 +117,7 @@
       return [...range.getClientRects()].map(r=>({left:r.left,top:r.top,right:r.right,bottom:r.bottom,width:r.width,height:r.height}));
     }
     const cs=getComputedStyle(el),mirror=document.createElement('div');mirror.setAttribute('data-escrita-ignore','');
-    for(const p of ['fontFamily','fontSize','fontWeight','fontStyle','fontVariant','lineHeight','letterSpacing','wordSpacing','textAlign','textIndent','textTransform','paddingTop','paddingRight','paddingBottom','paddingLeft','borderTopWidth','borderRightWidth','borderBottomWidth','borderLeftWidth','boxSizing','wordBreak','overflowWrap','tabSize','direction'])mirror.style[p]=cs[p];
+    for(const p of MIRROR_PROPS)mirror.style[p]=cs[p];
     Object.assign(mirror.style,{position:'fixed',left:'-100000px',top:'0',visibility:'hidden',pointerEvents:'none',borderStyle:'solid',boxSizing:'border-box',whiteSpace:el instanceof HTMLInputElement?'pre':'pre-wrap',width:(el.clientWidth+parseFloat(cs.borderLeftWidth)+parseFloat(cs.borderRightWidth))+'px',overflow:'hidden'});
     if(el instanceof HTMLInputElement)mirror.style.lineHeight=Math.max(1,el.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom))+'px';
     const node=document.createTextNode(el.value);mirror.append(node);document.documentElement.append(mirror);
