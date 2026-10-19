@@ -24,8 +24,21 @@
     message = "Conectando ao assistente…",
     phase = "connecting",
     issues = [],
-    lastText = "",
+    lastText = "";
+  // Bounded LRU of ignored issue signatures per field. Replacing the Set on
+  // every focus/apply prevented GC from reclaiming old signatures; now the
+  // same instance is reused with an explicit size cap (500 entries).
+  const IGNORED_LIMIT = 500,
     ignored = new Set();
+  function ignoreIssue(sig) {
+    if (ignored.has(sig)) ignored.delete(sig);
+    ignored.add(sig);
+    while (ignored.size > IGNORED_LIMIT)
+      ignored.delete(ignored.values().next().value);
+  }
+  function clearIgnored() {
+    ignored.clear();
+  }
   const n = U.node;
   let pinned = false,
     activeTab = "review",
@@ -289,7 +302,7 @@
     const row = n("div", { class: "toolbar" }),
       ignore = n("button", { class: "button", text: "Ignorar" });
     ignore.onclick = () => {
-      ignored.add(signature(issue));
+      ignoreIssue(signature(issue));
       U.detail.hidden = true;
       render();
     };
@@ -306,6 +319,22 @@
             word: issue.quote,
             language: issue.language || "pt-BR",
           });
+          // Reflect the new term locally right away; the background also
+          // invalidates its cache and notifies every tab via prefsChanged.
+          const lang = issue.language || "pt-BR",
+            terms = prefs.dictionary[lang] || [];
+          if (!terms.some((w) => E.norm(w) === E.norm(issue.quote)))
+            prefs = {
+              ...prefs,
+              dictionary: { ...prefs.dictionary, [lang]: [...terms, issue.quote] },
+            };
+          issues = E.merge(
+            E.localIssues(lastText),
+            lastText,
+            prefs.dictionary,
+            lang,
+          );
+          render();
           status("Termo salvo no dicionário.", "ready");
         } catch (e) {
           status(e.message, "error");
@@ -343,7 +372,7 @@
     if (actual !== before) undo = { el, before, after: actual };
     lastText = actual;
     issues = [];
-    ignored.clear();
+    clearIgnored();
     tab("review");
     render();
     status(
@@ -521,7 +550,7 @@
       current = el;
       filter = "all";
       tab("review");
-      ignored = new Set();
+      clearIgnored();
       lastText = safeText(el);
       issues = [];
       U.detail.hidden = true;
@@ -547,7 +576,7 @@
       prefs.dictionary,
       prefs.language === "auto" ? "pt-BR" : prefs.language,
     );
-    ignored.clear();
+    clearIgnored();
     status("Aguardando sua pausa…", "ready");
     render();
     schedule();
@@ -611,8 +640,12 @@
     if (!U.panel.hidden) selectionUI();
     layout();
   };
+  // Drag listeners live on window (pointer capture retargets events to the
+  // badge, but window guarantees cleanup even if pointerup is lost).
+  let dragCleanup = null;
   U.badge.onpointerdown = (e) => {
     if (e.button !== 0) return;
+    dragCleanup?.();
     const startX = e.clientX,
       startY = e.clientY,
       rect = U.badge.getBoundingClientRect(),
@@ -637,17 +670,21 @@
       if (!U.panel.hidden && !pinned) layout();
     };
     const end = () => {
-      U.badge.removeEventListener("pointermove", move);
-      U.badge.removeEventListener("pointerup", end);
-      U.badge.removeEventListener("pointercancel", end);
+      dragCleanup();
+      dragCleanup = null;
       if (!moved) return;
       suppressBadgeClick = true;
       setTimeout(() => { suppressBadgeClick = false; }, 0);
       chrome.storage.local.set({ badgePosition }).catch(() => {});
     };
-    U.badge.addEventListener("pointermove", move);
-    U.badge.addEventListener("pointerup", end);
-    U.badge.addEventListener("pointercancel", end);
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", end);
+    window.addEventListener("pointercancel", end);
+    dragCleanup = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", end);
+      window.removeEventListener("pointercancel", end);
+    };
   };
   U.close.onclick = () => setPanel(false);
   U.settings.onclick = () =>
