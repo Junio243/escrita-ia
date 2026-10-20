@@ -36,22 +36,23 @@ A apresentação prioriza o editor, com painel lateral, destaques diretamente no
 
 ## Recursos
 
-Na versão 3.1.0, use **Aplicar correção** junto da sugestão ou **Aplicar esta versão** em uma reescrita para alterar o campo da página. A confirmação permanece visível durante a nova revisão. **Buscar sugestões** apenas executa a análise. Também foi corrigido um erro ao posicionar o painel abaixo de campos largos ou em telas estreitas.
+Na versão **3.2.0**, a extensão ganhou novos ícones e identidade visual redesenhados (`logo.svg` e PNGs renderizados em alta definição), 9 estilos de reescrita, estatísticas detalhadas de texto (`textStats`), higienização rápida de formatação (`cleanText`), regras locais expandidas de português, busca e importação/exportação de dicionário em JSON, gerenciamento de sites pausados nas configurações e atalhos rápidos no popup.
 
 - Análise automática após 400 ms sem digitação.
-- Correções de ortografia, gramática, pontuação e tipografia.
+- Correções de ortografia, gramática, pontuação e tipografia (incluindo espaço antes da pontuação).
 - Sugestões de estilo, tom, redundância e concisão.
-- Reescrita clara, concisa, formal, fluida ou persuasiva.
-- Aplicação de cada sugestão com um clique e opção de desfazer.
-- Atalho `Alt+Shift+E` para abrir/fechar o painel no campo ativo.
-- Estatísticas da sessão (análises, ocorrências, sugestões aplicadas) no diagnóstico.
-- Revisão local sem IA para palavras e espaços duplicados; com **Português · Brasil** ou **Português · Portugal** selecionado, também verifica acentuação e algumas regras gramaticais.
-- Dicionário pessoal separado por idioma.
+- 9 estilos de reescrita: *Mais claro*, *Mais conciso*, *Mais formal*, *Mais fluido*, *Mais persuasivo*, *Mais amigável*, *Direto ao ponto*, *Acadêmico e técnico* e *Mais criativo*.
+- Aplicação de cada sugestão com um clique, botão **Copiar** texto, **Limpar espaços** e opção de desfazer.
+- Atalho `Alt+Shift+E` (ou botão direto no popup) para abrir/fechar o painel no campo ativo.
+- Estatísticas da sessão (análises, ocorrências, sugestões aplicadas) e controle rápido do **Modo Exigente** no popup.
+- Revisão local sem IA para palavras e espaços duplicados e espaço antes de pontuação; com **Português · Brasil** ou **Português · Portugal** selecionado, também verifica acentuação ampliada, grafia (`concerteza`, `derepente`, `porisso`, `apartir`), verbos impessoais (`fazer`/`haver`), crase e pleonasmos.
+- Dicionário pessoal separado por idioma, com busca em tempo real, contador de termos e importação/exportação em JSON.
+- Gerenciamento de sites pausados diretamente na página de Configurações e predefinições para **Google AI Studio**, **OpenAI**, **OpenRouter**, **Groq**, **Ollama** e **LM Studio**.
 - Modo Exigente para revisão estilística mais rigorosa.
-- Contadores de palavras e caracteres dentro do campo.
+- Contadores de palavras, caracteres, frases, tempo estimado de leitura e legibilidade.
 - Temas claro e escuro.
 - 36 variantes em 34 idiomas.
-- Adaptadores para campos e editores usados por ChatGPT, Instagram, Facebook, LinkedIn e X.
+- Adaptadores para campos (`textarea`, `input[type=text]`, `input[type=search]`, `contenteditable`) e editores usados por ChatGPT, Instagram, Facebook, LinkedIn, X, Gmail, WhatsApp Web, Notion, GitHub, Claude, Gemini, Slack e Discord.
 
 ## Provedores de IA
 
@@ -143,6 +144,6 @@ As regras de retenção, privacidade e cobrança dependem do provedor escolhido.
 
 ## Versão
 
-Versão atual: **3.1.0**.
+Versão atual: **3.2.0**.
 
 Consulte [LEIA-ME.md](LEIA-ME.md) para instruções completas e [VALIDACAO.md](VALIDACAO.md) para os resultados de validação.

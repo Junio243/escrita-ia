@@ -1,5 +1,14 @@
 # Relatório de validação — Escrita IA
 
+Data: 19 de outubro de 2026.
+
+## Versão 3.2.0 — novos ícones, motor expandido e novas ferramentas
+
+- **Ícones e interface**: `icons/logo.svg` e ícones PNG (`16`, `32`, `48` e `128` px) redesenhados com monograma editorial, brilho de IA e renderização *supersampled* 6×6; biblioteca de ícones SVG expandida no painel (`panel.js`).
+- **Motor local (`engine.js`)**: adicionadas as funções `textStats` (palavras, caracteres, frases, parágrafos, vocabulário único, tempo de leitura e legibilidade) e `cleanText` (higienização de espaços duplicados, espaço antes de pontuação e linhas em branco excessivas), 9 estilos de reescrita (`styles`) e ampliação das regras determinísticas de português (acentuação, grafia, verbos impessoais, crase, pleonasmos e espaço antes da pontuação).
+- **Painel, Popup, Configurações e Demo**: botões **Copiar** e **Limpar espaços** no painel, alternância rápida do **Modo Exigente** e restauração da posição do botão flutuante no popup, predefinições para **Groq** e **LM Studio**, busca/importação/exportação em JSON no dicionário pessoal, gerenciamento de sites pausados nas configurações e botão **Aplicar tudo** na demonstração.
+- **Testes automatizados**: 43 testes unitários aprovados (`tests/*.test.js`), cobrindo também `textStats`, `cleanText` e as novas regras locais.
+
 Data: 1º de outubro de 2026.
 
 ## Versão 3.1.0 — revisão local em português
