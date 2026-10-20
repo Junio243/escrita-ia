@@ -70,3 +70,31 @@ test('locate rejects context mismatches',()=>{
   assert.equal(E.locate('teste teste',issue),null);
   assert.deepEqual(E.locate('x teste',{quote:'teste',left:'x ',right:''}),{start:2,end:7});
 });
+
+test('textStats calculates words, sentences, paragraphs, reading time and readability',()=>{
+  const empty=E.textStats('');
+  assert.equal(empty.words,0);
+  assert.equal(empty.sentences,0);
+  assert.equal(empty.paragraphs,0);
+  assert.equal(empty.readingTimeMinutes,0);
+  assert.equal(empty.readability,'Vazio');
+  const stats=E.textStats('Primeira frase clara. Segunda frase curta.\n\nSegundo parágrafo aqui.');
+  assert.equal(stats.words,9);
+  assert.equal(stats.sentences,3);
+  assert.equal(stats.paragraphs,2);
+  assert.equal(stats.readingTimeMinutes,1);
+  assert(stats.uniqueWords>=7);
+});
+
+test('cleanText normalizes duplicate spaces, space before punctuation and extra blank lines',()=>{
+  assert.equal(E.cleanText('Olá ,  mundo !   \n\n\n\nTudo  bem ?'), 'Olá, mundo!\n\nTudo bem?');
+});
+
+test('expanded Portuguese rules catch orthography, impersonal verbs, crase and punctuation spacing',()=>{
+  const issues=E.allLocalIssues('Concerteza faz sentido , mas fazem dois anos que fui a aquele lugar.','pt-BR');
+  const rules=issues.map(i=>i.rule);
+  assert(rules.includes('Grafia'));
+  assert(rules.includes('Espaço antes da pontuação'));
+  assert(rules.includes('Concordância verbal'));
+  assert(rules.includes('Crase'));
+});

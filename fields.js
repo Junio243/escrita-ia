@@ -1,6 +1,6 @@
 (() => {
   if (globalThis.EscritaFields) return;
-  const plain = el => el instanceof HTMLTextAreaElement || (el instanceof HTMLInputElement && el.type === 'text');
+  const plain = el => el instanceof HTMLTextAreaElement || (el instanceof HTMLInputElement && (el.type === 'text' || el.type === 'search'));
   // Cache the Set instances used in hot paths (snapshot walks every node).
   const BLOCK_TAGS = new Set(['DIV','P','LI','PRE','BLOCKQUOTE','H1','H2','H3']);
   const SKIP_TAGS = new Set(['SCRIPT','STYLE']);
@@ -133,6 +133,14 @@
     if(host.endsWith('facebook.com'))return el.matches('[data-lexical-editor]')?'Facebook · Lexical':'Facebook · editável';
     if(host.endsWith('linkedin.com'))return el.matches('.ql-editor')?'LinkedIn · Quill':'LinkedIn · editável';
     if(host==='x.com'||host.endsWith('.x.com'))return 'X · Draft/editor';
+    if(host==='mail.google.com')return 'Gmail · Editor';
+    if(host==='web.whatsapp.com')return 'WhatsApp · Lexical';
+    if(host.endsWith('notion.so')||host.endsWith('notion.site'))return 'Notion · Bloco';
+    if(host==='github.com'||host.endsWith('.github.com'))return 'GitHub · Markdown';
+    if(host==='claude.ai'||host.endsWith('.claude.ai'))return 'Claude · ProseMirror';
+    if(host==='gemini.google.com')return 'Gemini · Editor';
+    if(host.endsWith('slack.com'))return 'Slack · Editor';
+    if(host==='discord.com'||host.endsWith('.discord.com'))return 'Discord · Slate';
     return plain(el)?'Campo HTML':'Editor HTML';
   }
   function focused(){let el=document.activeElement;while(el?.shadowRoot?.activeElement)el=el.shadowRoot.activeElement;return field(el);}

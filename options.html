@@ -9,9 +9,9 @@
   <body class="options">
     <div class="options-header">
       <header>
-        <div class="brand-icon">e<span>✦</span></div>
+        <div class="brand-icon" aria-hidden="true">e<span>✦</span></div>
         <div>
-          <div class="eyebrow">ESCRITA IA · ESTÚDIO 3.0</div>
+          <div class="eyebrow">ESCRITA IA · ESTÚDIO 3.2</div>
           <h1>Um assistente do seu jeito.</h1>
         </div>
       </header>
@@ -22,7 +22,8 @@
         <a href="#connection">01 · Conexão com IA</a
         ><a href="#preferences">02 · Experiência de revisão</a
         ><a href="#dictionary">03 · Dicionário pessoal</a
-        ><a href="#privacy">04 · Privacidade</a>
+        ><a href="#sites">04 · Sites gerenciados</a
+        ><a href="#privacy">05 · Privacidade</a>
         <div class="nav-note">
           Abra o painel no campo ativo com
           <strong>Alt + Shift + E</strong>.<br /><br />Revisões locais funcionam
@@ -35,7 +36,7 @@
             <div class="section-label">01 / CONEXÃO</div>
             <h2>Escolha a inteligência por trás das ideias.</h2>
             <p class="section-description">
-              Conecte OpenAI, Gemini, OpenRouter, Ollama/local ou outro serviço
+              Conecte OpenAI, Gemini, OpenRouter, Groq, Ollama/local ou outro serviço
               compatível com OpenAI. Para outro serviço, informe a URL base e o nome exato do modelo.
               APIs com formato próprio precisam de um adaptador específico. Sua chave fica no perfil do Chrome e nunca
               é exibida nas páginas.
@@ -44,7 +45,9 @@
               <button type="button" id="preset-google">Google AI Studio</button>
               <button type="button" id="preset-openai">OpenAI</button
               ><button type="button" id="preset-openrouter">OpenRouter</button
-              ><button type="button" id="preset-local">Servidor local / Ollama</button>
+              ><button type="button" id="preset-groq">Groq</button
+              ><button type="button" id="preset-local">Servidor local / Ollama</button
+              ><button type="button" id="preset-lmstudio">LM Studio</button>
             </div>
             <label for="providerUrl">URL da API</label
             ><input
@@ -136,6 +139,11 @@
               >Inclui recomendações de estilo mais rigorosas. Toda correção
               continua dependendo do seu clique.</small
             >
+            <div class="row">
+              <button type="button" id="reset-badge-pos">
+                Restaurar posição padrão do botão flutuante
+              </button>
+            </div>
           </section>
           <div class="save-bar">
             <span>Você continua no controle de cada palavra.</span
@@ -147,10 +155,13 @@
         <div id="status" role="status" aria-live="polite"></div>
         <section id="dictionary">
           <div class="section-label">03 / DICIONÁRIO</div>
-          <h2>Palavras que fazem parte de você.</h2>
+          <div class="section-head-row">
+            <h2>Palavras que fazem parte de você.</h2>
+            <span class="badge-pill" id="dict-count">0 termos</span>
+          </div>
           <p class="section-description">
             Nomes, siglas e termos especiais. Seu dicionário respeita cada
-            idioma.
+            idioma e pode ser exportado ou importado em JSON.
           </p>
           <div class="field-grid">
             <div>
@@ -167,12 +178,33 @@
             </div>
           </div>
           <div class="row">
-            <button id="add" type="button">Adicionar termo</button>
+            <button id="add" type="button" class="primary">Adicionar termo</button>
+            <button id="export-dict" type="button">Exportar JSON</button>
+            <button id="import-dict" type="button">Importar JSON</button>
+            <button id="clear-dict" type="button">Limpar idioma</button>
+            <input id="import-file" type="file" accept="application/json,.json" hidden />
           </div>
+          <label for="dict-search">Buscar no dicionário</label>
+          <input
+            id="dict-search"
+            type="search"
+            placeholder="Filtrar termos deste idioma…"
+          />
           <div id="terms"></div>
         </section>
+        <section id="sites">
+          <div class="section-label">04 / SITES GERENCIADOS</div>
+          <h2>Controle onde o assistente atua.</h2>
+          <p class="section-description">
+            Sites em que você pausou a revisão automática pelo popup aparecem abaixo. Você pode reativá-los a qualquer momento.
+          </p>
+          <div id="paused-sites"></div>
+          <div class="row">
+            <button id="clear-sites" type="button">Reativar todos os sites</button>
+          </div>
+        </section>
         <section id="privacy">
-          <div class="section-label">04 / TRANSPARÊNCIA</div>
+          <div class="section-label">05 / TRANSPARÊNCIA</div>
           <h2>Sua escrita merece cuidado.</h2>
           <p class="section-description">
             O campo ativo é enviado ao provedor configurado após uma pausa.
@@ -185,26 +217,26 @@
             Chrome, editores em canvas e áreas protegidas podem impedir a
             integração. O diagnóstico no popup ajuda a identificar o problema.
           </p>
-          <a
-            href="https://platform.openai.com/api-keys"
-            target="_blank"
-            rel="noreferrer"
-            >Gerenciar chaves da OpenAI ↗</a
-          >
-          <br />
-          <a
-            href="https://aistudio.google.com/apikey"
-            target="_blank"
-            rel="noreferrer"
-            >Gerenciar chaves do Google AI Studio ↗</a
-          >
-          <br />
-          <a
-            href="https://openrouter.ai/keys"
-            target="_blank"
-            rel="noreferrer"
-            >Gerenciar chaves do OpenRouter ↗</a
-          >
+          <div class="links-row">
+            <a
+              href="https://platform.openai.com/api-keys"
+              target="_blank"
+              rel="noreferrer"
+              >Gerenciar chaves da OpenAI ↗</a
+            >
+            <a
+              href="https://aistudio.google.com/apikey"
+              target="_blank"
+              rel="noreferrer"
+              >Gerenciar chaves do Google AI Studio ↗</a
+            >
+            <a
+              href="https://openrouter.ai/keys"
+              target="_blank"
+              rel="noreferrer"
+              >Gerenciar chaves do OpenRouter ↗</a
+            >
+          </div>
         </section>
       </main>
     </div>

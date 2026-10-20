@@ -7,10 +7,10 @@
   </head>
   <body class="popup">
     <header>
-      <div class="brand-icon">e<span>✦</span></div>
+      <div class="brand-icon" aria-hidden="true">e<span>✦</span></div>
       <div>
         <div class="eyebrow">SEU ESTÚDIO DE ESCRITA</div>
-        <h1>Escrita IA <span class="version">3.0</span></h1>
+        <h1>Escrita IA <span class="version">3.2</span></h1>
       </div>
     </header>
     <section class="hero">
@@ -36,6 +36,12 @@
           ><small id="origin">Identificando a página…</small></span
         ><input id="site" type="checkbox" role="switch"
       /></label>
+      <label class="switch-row"
+        ><span
+          ><strong>Modo Exigente</strong
+          ><small>Sugestões extras de estilo e formalidade</small></span
+        ><input id="picky-toggle" type="checkbox" role="switch"
+      /></label>
     </section>
     <div class="stats">
       <div><strong id="analyses">0</strong><span>Análises</span></div>
@@ -44,13 +50,21 @@
     </div>
     <p class="caption">Nesta sessão do serviço de fundo</p>
     <div id="status" role="status" aria-live="polite"></div>
-    <button class="primary full" id="settings">
-      Personalizar meu assistente <span>↗</span>
-    </button>
+    <div class="popup-actions">
+      <button class="primary full" id="settings">
+        Personalizar meu assistente <span aria-hidden="true">↗</span>
+      </button>
+      <button class="full" id="open-panel" type="button">
+        Alternar painel na aba ativa <span aria-hidden="true">✦</span>
+      </button>
+    </div>
     <details>
       <summary>Conexão e diagnóstico</summary>
       <dl id="diagnostic" class="diagnostic"></dl>
-      <button id="retry" class="full">Verificar e reconectar</button>
+      <div class="row">
+        <button id="retry" type="button">Verificar e reconectar</button>
+        <button id="reset-badge" type="button">Restaurar posição do botão</button>
+      </div>
     </details>
     <script src="popup.js"></script>
   </body>

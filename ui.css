@@ -42,21 +42,24 @@ header {
   margin-bottom: 24px;
 }
 .brand-icon {
-  width: 42px;
-  height: 45px;
-  border-radius: 12px;
-  background: #2c60d7;
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, #1e40af, #3b5bdb 55%, #6d28d9);
   color: white;
-  font: bold 42px/1 Georgia;
+  font: 800 32px/1 Georgia, serif;
   display: grid;
   place-content: center;
   position: relative;
+  box-shadow: 0 5px 14px #275cda38;
+  flex-shrink: 0;
 }
 .brand-icon span {
   position: absolute;
-  font: 17px system-ui;
-  right: 3px;
-  top: 0;
+  font: 13px system-ui;
+  color: #fde047;
+  right: 4px;
+  top: 2px;
 }
 h1 {
   font-size: 25px;
@@ -456,6 +459,42 @@ summary {
   padding: 20px 0 0;
   color: var(--muted);
   font-size: 12px;
+}
+#paused-sites:empty:after {
+  content: "Nenhum site pausado no momento. Todos os sites permitidos estão ativos.";
+  display: block;
+  padding: 12px 0 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.section-head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.section-head-row h2 {
+  margin: 0;
+}
+.badge-pill {
+  background: var(--soft);
+  color: var(--accent);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.popup-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.links-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 :focus-visible {
   outline: 3px solid #80aaff;

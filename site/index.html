@@ -143,6 +143,8 @@ Quero quero compartilhar  essa ideia com você.</textarea
                   <button id="undo" type="button" disabled>Desfazer</button
                   ><button id="clear" type="button" class="text-button">
                     Limpar texto
+                  </button><button id="apply-all" type="button" class="text-button">
+                    Aplicar tudo
                   </button>
                 </div>
                 <button id="copy" type="button" class="text-button">
@@ -177,6 +179,12 @@ Quero quero compartilhar  essa ideia com você.</textarea
                   aria-pressed="false"
                 >
                   Espaços <span>1</span>
+                </button><button
+                  type="button"
+                  data-filter="spelling"
+                  aria-pressed="false"
+                >
+                  Ortografia <span>0</span>
                 </button>
               </div>
               <p id="status" role="status" aria-live="polite"></p>
@@ -279,7 +287,9 @@ Quero quero compartilhar  essa ideia com você.</textarea
             <div class="tone-cloud" aria-label="Estilos de reescrita">
               <span>Mais claro</span><span>Mais conciso</span
               ><span>Mais formal ↗</span><span>Mais fluido</span
-              ><span>Mais persuasivo</span>
+              ><span>Mais persuasivo</span><span>Mais amigável</span
+              ><span>Direto ao ponto</span><span>Acadêmico e técnico</span
+              ><span>Mais criativo</span>
             </div>
             <p class="card-note">
               A mesma intenção. O tom que combina com você.

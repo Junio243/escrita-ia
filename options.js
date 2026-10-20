@@ -63,24 +63,60 @@ function theme(value) {
 }
 async function terms() {
   const { dictionary = {} } = await chrome.storage.local.get("dictionary");
+  const lang = $("dictLanguage").value;
+  const allWords = dictionary[lang] || [];
+  const query = E.norm($("dict-search")?.value || "").trim();
+  const filtered = query
+    ? allWords.filter((w) => E.norm(w).includes(query))
+    : allWords;
+  if ($("dict-count")) {
+    $("dict-count").textContent = `${allWords.length} ${allWords.length === 1 ? "termo" : "termos"}`;
+  }
+  if ($("clear-dict")) $("clear-dict").disabled = allWords.length === 0;
   $("terms").replaceChildren();
-  for (const word of dictionary[$("dictLanguage").value] || []) {
+  for (const word of filtered) {
     const row = document.createElement("div");
     row.className = "term";
     const text = document.createElement("span");
     text.textContent = word;
     const button = document.createElement("button");
     button.textContent = "Remover";
+    button.type = "button";
     button.onclick = async () => {
       const { dictionary: latest = {} } =
           await chrome.storage.local.get("dictionary"),
-        lang = $("dictLanguage").value;
-      latest[lang] = (latest[lang] || []).filter((w) => w !== word);
+        currentLang = $("dictLanguage").value;
+      latest[currentLang] = (latest[currentLang] || []).filter((w) => w !== word);
       await chrome.storage.local.set({ dictionary: latest });
       terms();
     };
     row.append(text, button);
     $("terms").append(row);
+  }
+}
+async function renderPausedSites() {
+  if (!$("paused-sites")) return;
+  const { autoSites = {} } = await chrome.storage.local.get("autoSites");
+  const paused = Object.entries(autoSites).filter(([, enabled]) => enabled === false);
+  $("paused-sites").replaceChildren();
+  if ($("clear-sites")) $("clear-sites").disabled = paused.length === 0;
+  for (const [siteOrigin] of paused) {
+    const row = document.createElement("div");
+    row.className = "term";
+    const text = document.createElement("span");
+    text.textContent = siteOrigin;
+    const button = document.createElement("button");
+    button.textContent = "Reativar";
+    button.type = "button";
+    button.onclick = async () => {
+      const { autoSites: latest = {} } = await chrome.storage.local.get("autoSites");
+      delete latest[siteOrigin];
+      await chrome.storage.local.set({ autoSites: latest });
+      await renderPausedSites();
+      status(`Assistente reativado em ${siteOrigin}.`, "success");
+    };
+    row.append(text, button);
+    $("paused-sites").append(row);
   }
 }
 status("Carregando configurações…", "loading");
@@ -120,8 +156,11 @@ lock(true);
         ? "Provedor configurado; chave salva neste navegador."
         : "Provedor configurado; chave disponível nesta sessão.",
     );
+  } else {
+    status("Pronto para personalizar seu assistente.");
   }
   await terms();
+  await renderPausedSites();
   await credentialState();
 })()
   .catch((e) => status(e.message, "error"))
@@ -241,29 +280,36 @@ $("show-key").onclick = () => {
 $("providerUrl").addEventListener("change", () =>
   credentialState().catch((e) => status(e.message)),
 );
-for (const [id, url] of [
-  ["preset-openai", DEFAULT_PROVIDER_URL],
-  ["preset-openrouter", "https://openrouter.ai/api/v1"],
-  ["preset-local", "http://localhost:11434/v1"],
-  ["preset-google", GOOGLE_PROVIDER_URL],
-])
-  $(id).onclick = () => {
+for (const [id, url, defaultModel, format] of [
+  ["preset-openai", DEFAULT_PROVIDER_URL, "gpt-4.1-mini", "auto"],
+  ["preset-openrouter", "https://openrouter.ai/api/v1", "openai/gpt-4o-mini", "auto"],
+  ["preset-groq", "https://api.groq.com/openai/v1", "llama-3.3-70b-versatile", "chat"],
+  ["preset-local", "http://localhost:11434/v1", "", "auto"],
+  ["preset-lmstudio", "http://localhost:1234/v1", "", "chat"],
+  ["preset-google", GOOGLE_PROVIDER_URL, "", "chat"],
+]) {
+  const el = $(id);
+  if (!el) continue;
+  el.onclick = () => {
     $("providerUrl").value = url;
     $("key").value = "";
-    $("model").value = id === "preset-openai" ? "gpt-4.1-mini" : "";
-    $("providerFormat").value = id === "preset-google" ? "chat" : "auto";
+    $("model").value = defaultModel;
+    $("providerFormat").value = format;
     $("model").placeholder =
       id === "preset-google"
         ? "Identificador exato do modelo Gemini no AI Studio"
         : id === "preset-openrouter"
           ? "Ex.: openai/gpt-4o-mini ou anthropic/claude-3.5-sonnet"
-        : "Identificador fornecido pelo seu provedor";
-    if (id === "preset-openrouter") $("model").value = "openai/gpt-4o-mini";
+          : id === "preset-groq"
+            ? "Ex.: llama-3.3-70b-versatile"
+            : "Identificador fornecido pelo seu provedor";
     status("Predefinição preenchida. Confira o modelo e salve para usar.");
     credentialState().catch((e) => status(e.message));
   };
+}
 $("dictLanguage").onchange = terms;
-$("add").onclick = async () => {
+if ($("dict-search")) $("dict-search").oninput = terms;
+async function addTerm() {
   try {
     const r = await chrome.runtime.sendMessage({
       type: "dictionaryAdd",
@@ -273,8 +319,91 @@ $("add").onclick = async () => {
     if (!r.ok) throw Error(r.error);
     $("word").value = "";
     await terms();
-    status("Termo adicionado.");
+    status("Termo adicionado.", "success");
   } catch (e) {
     status(e.message, "error");
   }
-};
+}
+$("add").onclick = addTerm;
+$("word").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    addTerm();
+  }
+});
+if ($("clear-dict")) {
+  $("clear-dict").onclick = async () => {
+    const lang = $("dictLanguage").value;
+    const { dictionary = {} } = await chrome.storage.local.get("dictionary");
+    delete dictionary[lang];
+    await chrome.storage.local.set({ dictionary });
+    await terms();
+    status("Termos do idioma selecionado foram removidos.", "success");
+  };
+}
+if ($("export-dict")) {
+  $("export-dict").onclick = async () => {
+    const { dictionary = {} } = await chrome.storage.local.get("dictionary");
+    const blob = new Blob([JSON.stringify(dictionary, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "escrita-ia-dicionario.json";
+    a.click();
+    URL.revokeObjectURL(url);
+    status("Dicionário exportado em JSON.", "success");
+  };
+}
+if ($("import-dict") && $("import-file")) {
+  $("import-dict").onclick = () => $("import-file").click();
+  $("import-file").onchange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const parsed = JSON.parse(await file.text());
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))
+        throw Error("Formato de dicionário inválido.");
+      const { dictionary = {} } = await chrome.storage.local.get("dictionary");
+      const merged = { ...dictionary };
+      for (const [lang, list] of Object.entries(parsed)) {
+        if (!Object.hasOwn(E.languages, lang) || lang === "auto" || !Array.isArray(list))
+          continue;
+        const current = [...(merged[lang] || [])];
+        for (const item of list) {
+          if (typeof item === "string" && item.trim() && item.length <= 100) {
+            const w = item.trim();
+            if (!current.some((x) => E.norm(x) === E.norm(w)) && current.length < 1000)
+              current.push(w);
+          }
+        }
+        merged[lang] = current;
+      }
+      await chrome.storage.local.set({ dictionary: merged });
+      await terms();
+      status("Dicionário importado com sucesso.", "success");
+    } catch (err) {
+      status(err.message || "Falha ao importar JSON.", "error");
+    } finally {
+      $("import-file").value = "";
+    }
+  };
+}
+if ($("clear-sites")) {
+  $("clear-sites").onclick = async () => {
+    await chrome.storage.local.set({ autoSites: {} });
+    await renderPausedSites();
+    status("Todos os sites foram reativados.", "success");
+  };
+}
+if ($("reset-badge-pos")) {
+  $("reset-badge-pos").onclick = async () => {
+    await chrome.storage.local.set({ badgePosition: null });
+    status("Posição do botão flutuante restaurada para o padrão.", "success");
+  };
+}
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "local" && changes.autoSites) renderPausedSites();
+  if (area === "local" && changes.dictionary) terms();
+});

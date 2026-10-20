@@ -1,1 +1,39 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><defs><linearGradient id="g" x2="1" y2="1"><stop stop-color="#3459e8"/><stop offset="1" stop-color="#803bd9"/></linearGradient></defs><rect x="3" y="3" width="122" height="122" rx="30" fill="url(#g)"/><path d="M34 86 57 32h14l23 54H78l-5-13H54l-5 13ZM59 59h9l-4-12Z" fill="white"/><path d="m88 24 3 8 8 3-8 3-3 8-3-8-8-3 8-3Z" fill="#dacdff"/><path d="M35 99h58" stroke="#c7b9ff" stroke-width="7" stroke-linecap="round"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="8" y1="6" x2="120" y2="122" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1E40AF"/>
+      <stop offset="0.52" stop-color="#3B5BDB"/>
+      <stop offset="1" stop-color="#6D28D9"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="16" y1="10" x2="112" y2="118" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#93C5FD" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#C4B5FD" stop-opacity="0.08"/>
+    </linearGradient>
+    <linearGradient id="sparkGrad" x1="78" y1="18" x2="110" y2="50" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FEF08A"/>
+      <stop offset="0.5" stop-color="#FDE047"/>
+      <stop offset="1" stop-color="#F59E0B"/>
+    </linearGradient>
+    <linearGradient id="underlineGrad" x1="30" y1="100" x2="98" y2="100" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#60A5FA"/>
+      <stop offset="0.5" stop-color="#A78BFA"/>
+      <stop offset="1" stop-color="#F472B6"/>
+    </linearGradient>
+    <filter id="shadow" x="18" y="16" width="96" height="96" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#0F172A" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+  <!-- App Squircle Background -->
+  <rect x="4" y="4" width="120" height="120" rx="28" fill="url(#bg)"/>
+  <rect x="5.5" y="5.5" width="117" height="117" rx="26.5" stroke="url(#glow)" stroke-width="3"/>
+  <!-- Subtle Editorial Monogram 'e' + Nib Curve -->
+  <g filter="url(#shadow)">
+    <path d="M77.5 64.5H43.5C44.8 72.8 50.8 77.5 59.5 77.5C65.4 77.5 70.3 75.4 74.2 71.8L82.8 79.5C77.1 85.6 69.1 89 59 89C41.8 89 30 77.2 30 60C30 43.2 41.6 31 57.8 31C74.2 31 84.5 42.8 84.5 58.8C84.5 61 84.3 62.9 84 64.5H77.5ZM43.6 54.2H71.2C70.2 46.5 65.1 41.8 57.6 41.8C50.2 41.8 45 46.4 43.6 54.2Z" fill="#FFFFFF"/>
+  </g>
+  <!-- AI Sparkle Star -->
+  <path d="M95 17L99.2 28.8L111 33L99.2 37.2L95 49L90.8 37.2L79 33L90.8 28.8L95 17Z" fill="url(#sparkGrad)"/>
+  <circle cx="107" cy="21" r="2.5" fill="#FEF08A"/>
+  <!-- Smart Revision Underline Pill -->
+  <rect x="30" y="96" width="68" height="7" rx="3.5" fill="url(#underlineGrad)"/>
+  <circle cx="95" cy="99.5" r="3.5" fill="#FEF08A"/>
+</svg>

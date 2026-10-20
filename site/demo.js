@@ -59,11 +59,12 @@
 
   function render(message = "") {
     const text = writing.value;
-    const metrics = engine.metrics(text);
+    const metrics = engine.textStats ? engine.textStats(text) : engine.metrics(text);
+    const sentenceInfo = metrics.sentences ? ` · ${metrics.sentences} ${metrics.sentences === 1 ? "frase" : "frases"}` : "";
     document.querySelector("#metrics").textContent =
-      `${metrics.words} palavras · ${metrics.characters} caracteres`;
+      `${metrics.words} palavras · ${metrics.characters} caracteres${sentenceInfo}`;
     document.querySelector("#reading").textContent = metrics.words
-      ? `${Math.max(1, Math.ceil(metrics.words / 200))} min de leitura`
+      ? `${Math.max(1, Math.ceil(metrics.words / 200))} min de leitura${metrics.readability ? ` · Leitura ${metrics.readability.toLowerCase()}` : ""}`
       : "Sua página em branco";
     const issues = engine.merge(engine.allLocalIssues(text), text);
     highlight(text, issues);
@@ -168,6 +169,8 @@
       status.textContent += " Exibindo as primeiras 20 sugestões.";
     undo.disabled = previous === null;
     copy.disabled = !text.trim();
+    const applyAll = document.querySelector("#apply-all");
+    if (applyAll) applyAll.disabled = issues.length === 0;
     syncExamples();
   }
 
@@ -189,6 +192,33 @@
     render("Texto limpo. Use Desfazer para recuperar seu rascunho.");
     writing.focus({ preventScroll: true });
   });
+  const applyAllBtn = document.querySelector("#apply-all");
+  if (applyAllBtn) {
+    applyAllBtn.addEventListener("click", () => {
+      const text = writing.value;
+      const issues = engine.merge(engine.allLocalIssues(text), text);
+      const selected = [];
+      let end = -1;
+      for (const issue of issues) {
+        if (issue.start >= end && issue.replacements?.length) {
+          selected.push(issue);
+          end = issue.end;
+        }
+      }
+      if (!selected.length) return;
+      previous = { text, selection };
+      let result = text;
+      for (const issue of selected.reverse()) {
+        result =
+          result.slice(0, issue.start) +
+          issue.replacements[0] +
+          result.slice(issue.end);
+      }
+      writing.value = result;
+      render("Todas as sugestões locais foram aplicadas. Use Desfazer se desejar.");
+      writing.focus({ preventScroll: true });
+    });
+  }
   undo.addEventListener("click", () => {
     if (previous === null) return;
     writing.value = previous.text;

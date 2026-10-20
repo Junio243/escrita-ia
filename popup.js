@@ -28,6 +28,8 @@ async function check(reconnect = false) {
     const p = await chrome.runtime.sendMessage({ type: "prefs" });
     if (!p?.ok) throw Error("Não foi possível acessar o serviço.");
     $("site").checked = p.prefs.autoSites[origin] !== false;
+    if ($("picky-toggle")) $("picky-toggle").checked = !!p.prefs.picky;
+    if ($("reset-badge")) $("reset-badge").disabled = !p.prefs.badgePosition;
     document.documentElement.classList.toggle(
       "dark",
       p.prefs.theme === "dark" ||
@@ -102,6 +104,39 @@ $("site").onchange = async () => {
   });
   check();
 };
+if ($("picky-toggle")) {
+  $("picky-toggle").onchange = async () => {
+    try {
+      await chrome.storage.local.set({ picky: $("picky-toggle").checked });
+      await check();
+    } catch (e) {
+      $("status").textContent = e.message;
+    }
+  };
+}
+if ($("open-panel")) {
+  $("open-panel").onclick = async () => {
+    try {
+      if (tab?.id != null) {
+        await chrome.tabs.sendMessage(tab.id, { type: "togglePanel" });
+        $("status").textContent = "Comando enviado ao campo ativo da página.";
+      }
+    } catch {
+      $("status").textContent = "Foque um campo de texto na página primeiro.";
+    }
+  };
+}
+if ($("reset-badge")) {
+  $("reset-badge").onclick = async () => {
+    try {
+      await chrome.storage.local.set({ badgePosition: null });
+      $("status").textContent = "Posição do botão flutuante restaurada.";
+      await check();
+    } catch (e) {
+      $("status").textContent = e.message;
+    }
+  };
+}
 $("retry").onclick = () => check(true);
 $("settings").onclick = () => chrome.runtime.openOptionsPage();
 check();

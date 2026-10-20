@@ -268,10 +268,13 @@
       }
     }
     if (current) {
-      const m = E.metrics(lastText, prefs.language);
-      U.metrics.textContent = `${m.words} palavras · ${m.characters} caracteres · ${F.adapter(current)}`;
+      const m = E.textStats ? E.textStats(lastText, prefs.language) : E.metrics(lastText, prefs.language);
+      const readInfo = m.readingTimeMinutes ? ` · ~${m.readingTimeMinutes} min` : "";
+      U.metrics.textContent = `${m.words} palavras · ${m.characters} caracteres${readInfo} · ${F.adapter(current)}`;
       U.badgeMetrics.textContent = `${m.words} pal. · ${m.characters} car.`;
     }
+    if (U.copy) U.copy.disabled = !lastText.trim();
+    if (U.cleanBtn) U.cleanBtn.disabled = !lastText.trim() || (E.cleanText && E.cleanText(lastText) === lastText);
     U.undo.hidden = !undo || undo.el !== current || undo.after !== lastText;
     layout();
   }
@@ -293,14 +296,19 @@
     for (const replacement of issue.replacements) {
       const b = n("button", {
         class: "button primary replacement",
-        text: `Aplicar correção: ${replacement || "remover trecho"}`,
         "data-apply": "",
-      });
+      }, [
+        U.icon("check"),
+        n("span", { text: `Aplicar correção: ${replacement || "remover trecho"}` }),
+      ]);
       b.onclick = () => applyRange(capture, replacement);
       U.detail.append(b);
     }
     const row = n("div", { class: "toolbar" }),
-      ignore = n("button", { class: "button", text: "Ignorar" });
+      ignore = n("button", { class: "button" }, [
+        U.icon("eyeOff"),
+        n("span", { text: "Ignorar" }),
+      ]);
     ignore.onclick = () => {
       ignoreIssue(signature(issue));
       U.detail.hidden = true;
@@ -310,8 +318,10 @@
     if (issue.category === "spelling") {
       const add = n("button", {
         class: "button",
-        text: "Adicionar ao dicionário",
-      });
+      }, [
+        U.icon("book"),
+        n("span", { text: "Adicionar ao dicionário" }),
+      ]);
       add.onclick = async () => {
         try {
           await send({
@@ -329,7 +339,7 @@
               dictionary: { ...prefs.dictionary, [lang]: [...terms, issue.quote] },
             };
           issues = E.merge(
-            E.localIssues(lastText),
+            E.allLocalIssues(lastText, prefs.language),
             lastText,
             prefs.dictionary,
             lang,
@@ -424,8 +434,10 @@
       select.append(n("option", { value, text }));
     const button = n("button", {
       class: "button primary",
-      text: "Gerar alternativas",
-    });
+    }, [
+      U.icon("wand"),
+      n("span", { text: "Gerar alternativas" }),
+    ]);
     button.onclick = () => rewrite(select.value, button);
     U.rewrite.append(
       label,
@@ -571,7 +583,7 @@
     invalidate();
     lastText = safeText(el);
     issues = E.merge(
-      E.localIssues(lastText),
+      E.allLocalIssues(lastText, prefs.language),
       lastText,
       prefs.dictionary,
       prefs.language === "auto" ? "pt-BR" : prefs.language,
@@ -705,6 +717,34 @@
   U.whole.onclick = () => {
     selectionUI(true);
   };
+  if (U.cleanBtn) {
+    U.cleanBtn.onclick = () => {
+      if (!current || safeText(current) !== lastText) return;
+      const cleaned = E.cleanText ? E.cleanText(lastText) : lastText;
+      if (cleaned !== lastText) {
+        applyRange(
+          { el: current, before: lastText, start: 0, end: lastText.length },
+          cleaned,
+        );
+      } else {
+        status("Espaços e pontuação já estão limpos.", "ready");
+      }
+    };
+  }
+  if (U.copy) {
+    U.copy.onclick = async () => {
+      if (!current) return;
+      const text = safeText(current);
+      if (!text.trim()) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        status("Texto copiado para a área de transferência.", "ready");
+        U.appliedFeedback.textContent = "✓ Texto copiado.";
+      } catch {
+        status("Não foi possível copiar automaticamente. Use Ctrl+C.", "error");
+      }
+    };
+  }
   U.tabs.addEventListener("keydown", (e) => {
     if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) {
       e.preventDefault();
