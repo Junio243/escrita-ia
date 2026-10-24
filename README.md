@@ -50,6 +50,23 @@
 
 A **Escrita IA** foi projetada para resolver um problema comum das ferramentas de revisão modernas: a dependência exclusiva de servidores proprietários lentos ou invasivos. Para isso, a extensão opera com uma **arquitetura de duplo motor**:
 
+- Análise automática após 400 ms sem digitação.
+- Correções de ortografia, gramática, pontuação e tipografia (incluindo espaço antes da pontuação).
+- Sugestões de estilo, tom, redundância e concisão.
+- 9 estilos de reescrita: *Mais claro*, *Mais conciso*, *Mais formal*, *Mais fluido*, *Mais persuasivo*, *Mais amigável*, *Direto ao ponto*, *Acadêmico e técnico* e *Mais criativo*.
+- Aplicação de cada sugestão com um clique, botão **Copiar** texto, **Limpar espaços** e opção de desfazer.
+- Atalho `Alt+Shift+E` (ou botão direto no popup) para abrir/fechar o painel no campo ativo.
+- Estatísticas da sessão (análises, ocorrências, sugestões aplicadas) e controle rápido do **Modo Exigente** no popup.
+- Revisão local sem IA para palavras e espaços duplicados e espaço antes de pontuação; com **Português · Brasil** ou **Português · Portugal** selecionado, também verifica acentuação ampliada, grafia (`concerteza`, `derepente`, `porisso`, `apartir`), verbos impessoais (`fazer`/`haver`), crase e pleonasmos.
+- Banco local de correções offline: abreviaturas e formas informais (`vc`, `vcs`, `tmb`, `pq`, `qdo`, `pra`, `pro`, `hj`, `amn`, `msg`, `obrigad`, `blz`, `sds`, `bjs`, `tdb`, `valeu`, `flw`) são sugeridas na revisão local sem chamada à IA.
+- Dicionário pessoal separado por idioma, com busca em tempo real, contador de termos e importação/exportação em JSON.
+- Gerenciamento de sites pausados diretamente na página de Configurações e predefinições para **Google AI Studio**, **OpenAI**, **OpenRouter**, **Groq**, **Ollama** e **LM Studio**.
+- Modo Exigente para revisão estilística mais rigorosa.
+- Contadores de palavras, caracteres, frases, tempo estimado de leitura e legibilidade.
+- Temas claro e escuro.
+- 36 variantes em 34 idiomas.
+- Adaptadores para campos (`textarea`, `input[type=text]`, `input[type=search]`, `contenteditable`) e editores usados por ChatGPT, Instagram, Facebook, LinkedIn, X, Gmail, WhatsApp Web, Notion, GitHub, Claude, Gemini, Slack e Discord.
+
 | Característica | ⚡ Motor Local (`engine.js`) | 🧠 Motor de IA (`provider.js`) |
 | :--- | :--- | :--- |
 | **Conectividade** | 100% Offline (execução instantânea no navegador) | Online (Cloud APIs) ou Localhost (`Ollama` / `LM Studio`) |
@@ -350,3 +367,29 @@ A segurança das suas credenciais e do que você escreve é tratada como priorid
 - 📘 **[LEIA-ME.md](LEIA-ME.md):** Manual detalhado de instalação, configuração avançada e uso passo a passo.
 - 🧪 **[VALIDACAO.md](VALIDACAO.md):** Relatório técnico dos testes executados, cenários cobertos e limitações conhecidas.
 - ⚖️ Distribuído sob a **Licença MIT**.
+
+![Painel da extensão com sugestão de acentuação](docs/screenshots/extension.png)
+
+## Arquivos importantes
+
+- `manifest.json`: manifesto Manifest V3.
+- `background.js`: serviço de fundo e comunicação com provedores.
+- `content.js`: detecção e acompanhamento dos campos.
+- `fields.js`: adaptadores para campos simples e editores ricos.
+- `panel.js`: interface, grifos e sugestões.
+- `provider.js`: compatibilidade com Responses e Chat Completions.
+- `options.html`: configurações do provedor, idiomas, tema e dicionário.
+- `LEIA-ME.md`: manual detalhado de instalação e uso.
+- `VALIDACAO.md`: relatório dos testes executados e limitações conhecidas.
+
+## Privacidade
+
+Somente o conteúdo do campo em revisão é enviado à URL configurada. A extensão não publica mensagens e não mantém histórico persistente dos textos. A chave fica no armazenamento local ou de sessão do perfil do Chrome e não é exposta aos scripts das páginas.
+
+As regras de retenção, privacidade e cobrança dependem do provedor escolhido. Páginas internas do Chrome, Chrome Web Store, Google Docs em canvas e áreas protegidas podem impedir a integração.
+
+## Versão
+
+Versão atual: **3.2.1**.
+
+Consulte [LEIA-ME.md](LEIA-ME.md) para instruções completas e [VALIDACAO.md](VALIDACAO.md) para os resultados de validação.

@@ -98,3 +98,34 @@ test('expanded Portuguese rules catch orthography, impersonal verbs, crase and p
   assert(rules.includes('Concordância verbal'));
   assert(rules.includes('Crase'));
 });
+
+test('banco de corretores locais sugere formas por extenso',()=>{
+  const issues=E.dbIssues('vc tmb pq qdo blz', 'pt-BR');
+  const map=Object.fromEntries(issues.map(i=>[i.quote,i.replacements[0]]));
+  assert.equal(map.vc,'você');
+  assert.equal(map.tmb,'também');
+  assert.equal(map.pq,'porque');
+  assert.equal(map.qdo,'quando');
+  assert.equal(map.blz,'beleza');
+  assert(issues.every(i=>i.source==='local'));
+});
+
+test('banco local ignora palavras já cobertas por acentos',()=>{
+  assert.equal(E.dbIssues('familia', 'pt-BR').length,0);
+});
+
+test('banco local respeita maiúsculas',()=>{
+  const [issue]=E.dbIssues('VC', 'pt-BR');
+  assert.equal(issue.replacements[0],'Você');
+});
+
+test('allLocalIssues inclui banco local',()=>{
+  const issues=E.allLocalIssues('vc tmb.', 'pt-BR');
+  assert(issues.some(i=>i.quote==='vc' && i.replacements[0]==='você'));
+  assert(issues.some(i=>i.quote==='tmb' && i.replacements[0]==='também'));
+});
+
+test('banco local não vaza para outros idiomas',()=>{
+  assert.equal(E.dbIssues('vc tmb', 'en-US').length,0);
+  assert.equal(E.allLocalIssues('vc tmb', 'auto').length,0);
+});

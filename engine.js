@@ -97,6 +97,13 @@
     'veiculo':'veículo','veiculos':'veículos','otimo':'ótimo','otima':'ótima','otimos':'ótimos','otimas':'ótimas','pessimo':'péssimo','pessima':'péssima',
     'economico':'econômico','economica':'econômica','academico':'acadêmico','academica':'acadêmica'
   }));
+  const CORRECTIONS_DB=new Map(Object.entries({
+    'vc':'você','vcs':'vocês','tmb':'também','pq':'porque','qdo':'quando',
+    'pra':'para','pro':'para o','hj':'hoje','amn':'amanhã','msg':'mensagem',
+    'obrigad':'obrigado','blz':'beleza','sds':'saudades','bjs':'beijos',
+    'tdb':'tudo bem','valeu':'obrigado','flw':'falou'
+  }));
+  const CORRECTION_CATEGORY={vc:'spelling',vcs:'spelling',tmb:'spelling',pq:'spelling',qdo:'spelling',pra:'spelling',pro:'spelling',hj:'spelling',amn:'spelling',msg:'spelling',obrigad:'spelling',blz:'style',sds:'style',bjs:'style',tdb:'style',valeu:'style',flw:'style'};
   function accentIssues(text,locale='pt-BR'){
     if(locale!=='pt-BR'&&locale!=='pt-PT')return[];
     const out=[];const re=/\p{L}+/gu;let m;
@@ -163,6 +170,21 @@
     }
     return out;
   }
+  function dbIssues(text,locale='pt-BR'){
+    if(locale!=='pt-BR'&&locale!=='pt-PT')return[];
+    const out=[];const re=/\p{L}+/gu;let m;
+    while((m=re.exec(text))!==null){
+      const word=m[0],start=m.index,end=start+word.length;
+      const fix=CORRECTIONS_DB.get(norm(word));
+      if(!fix||norm(fix)===norm(word)||ACCENTS.has(norm(word)))continue;
+      const before=text[start-1],after=text[end];
+      if(before&&/@/.test(before))continue;
+      if(after&&/@/.test(after))continue;
+      const fixed=/^\p{Lu}/u.test(word)?fix[0].toLocaleUpperCase('pt-BR')+fix.slice(1):fix;
+      out.push({start,end,quote:word,category:CORRECTION_CATEGORY[norm(word)]||'spelling',rule:'Correção local',explanation:`"${word}" é uma forma informal ou abreviada; use "${fixed}".`,replacements:[fixed],source:'local'});
+    }
+    return out;
+  }
   function localIssues(text) {
     const spacing=[...text.matchAll(/(?<=\S)[ ]{2,}(?=\S)/gu)].map(m=>({start:m.index,end:m.index+m[0].length,quote:m[0],category:'typography',rule:'Espaçamento duplicado',explanation:'Use um único espaço entre as palavras. Ignore se o espaçamento for intencional.',replacements:[' '],source:'local'}));
     const punctSpacing=[...text.matchAll(/(?<=\p{L})[ ]+([,;:])(?=\s|$)/gu)].map(m=>({start:m.index,end:m.index+m[0].length,quote:m[0],category:'punctuation',rule:'Espaço antes da pontuação',explanation:`Não se usa espaço antes de "${m[1]}". Coloque o sinal logo após a palavra.`,replacements:[m[1]],source:'local'}));
@@ -175,7 +197,7 @@
   }
   function allLocalIssues(text,locale='pt-BR'){
     const portuguese=locale==='pt-BR'||locale==='pt-PT';
-    return [...localIssues(text),...accentIssues(text,locale),...(portuguese?ptIssues(text):[])];
+    return [...localIssues(text),...accentIssues(text,locale),...dbIssues(text,locale),...(portuguese?ptIssues(text):[])];
   }
   function merge(issues,text,dictionary={},locale='pt-BR') {
     const seen=new Set();
@@ -185,5 +207,5 @@
       const key=i.start+':'+i.end+':'+i.replacements[0];if(seen.has(key))return false;seen.add(key);return true;
     }).sort((a,b)=>a.start-b.start||a.end-b.end).map((x,id)=>({...x,id:String(id),language:x.language||locale}));
   }
-  globalThis.EscritaEngine={languages,categories,styles,norm,metrics,textStats,cleanText,chunks,locate,localIssues,accentIssues,ptIssues,allLocalIssues,merge};
+  globalThis.EscritaEngine={languages,categories,styles,norm,metrics,textStats,cleanText,chunks,locate,localIssues,accentIssues,ptIssues,dbIssues,allLocalIssues,merge,correctionsDB:CORRECTIONS_DB};
 })();
