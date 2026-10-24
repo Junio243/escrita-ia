@@ -37,6 +37,124 @@ async function settings() {
     badgePosition: p.badgePosition,
   };
 }
+const dayStamp = () => new Date().toISOString().slice(0, 10);
+function normalizeUsage(value) {
+  const usage = {
+    requests: Number(value?.requests) || 0,
+    characters: Number(value?.characters) || 0,
+    errors: Number(value?.errors) || 0,
+    lastUsedAt: Number(value?.lastUsedAt) || 0,
+    lastErrorAt: Number(value?.lastErrorAt) || 0,
+    day: String(value?.day || ""),
+    dayRequests: 0,
+    dayCharacters: 0,
+  };
+  if (usage.day !== dayStamp()) {
+    usage.day = dayStamp();
+    usage.dayRequests = 0;
+    usage.dayCharacters = 0;
+  } else {
+    usage.dayRequests = Number(value?.dayRequests) || 0;
+    usage.dayCharacters = Number(value?.dayCharacters) || 0;
+  }
+  return usage;
+}
+function officialProvider(url) {
+  try {
+    return (
+      new URL(url).hostname === "api.openai.com" || isGoogleProvider(url)
+    );
+  } catch {
+    return false;
+  }
+}
+function credentialRemaining(credential) {
+  return credential.dailyLimit > 0
+    ? Math.max(0, credential.dailyLimit - credential.usage.dayRequests)
+    : Infinity;
+}
+function publicCredential(credential) {
+  const {
+    key,
+    deltaRequests,
+    deltaCharacters,
+    deltaErrors,
+    ...safe
+  } = credential;
+  return {
+    ...safe,
+    usage: { ...credential.usage },
+    remaining:
+      credential.dailyLimit > 0
+        ? Math.max(0, credential.dailyLimit - credential.usage.dayRequests)
+        : null,
+  };
+}
+async function credentialKeys() {
+  const a = await chrome.storage.local.get({ credentialKeys: {} }),
+    b = await chrome.storage.session.get({ credentialSessionKeys: {} });
+  return {
+    local: a.credentialKeys || {},
+    session: b.credentialSessionKeys || {},
+  };
+}
+function buildCredentialList(stored) {
+  const items = Array.isArray(stored) ? stored : [],
+    list = [];
+  for (const [index, item] of items.entries()) {
+    let url;
+    try {
+      url = normalizeProviderUrl(item?.url || DEFAULT_PROVIDER_URL);
+    } catch {
+      continue;
+    }
+    const model = String(item?.model || "").trim();
+    if (!model) continue;
+    const id = String(item?.id || "").trim() || `credential-${index + 1}`;
+    if (list.some((c) => c.id === id)) continue;
+    list.push({
+      id,
+      label: String(item?.label || `Provedor ${index + 1}`).slice(0, 80),
+      url,
+      model,
+      format: ["auto", "responses", "chat"].includes(item?.format)
+        ? item.format
+        : "auto",
+      enabled: item?.enabled !== false,
+      autoInclude: item?.autoInclude !== false,
+      keyStorage: ["local", "session", "none"].includes(item?.keyStorage)
+        ? item.keyStorage
+        : "none",
+      dailyLimit: Math.max(0, Number(item?.dailyLimit) || 0),
+      createdAt: Number(item?.createdAt) || Date.now(),
+      updatedAt: Number(item?.updatedAt) || 0,
+    });
+  }
+  return list;
+}
+async function flushUsage(credential) {
+  if (!credential) return;
+  const requests = credential.deltaRequests || 0,
+    characters = credential.deltaCharacters || 0,
+    errors = credential.deltaErrors || 0;
+  credential.deltaRequests = 0;
+  credential.deltaCharacters = 0;
+  credential.deltaErrors = 0;
+  if (!requests && !characters && !errors) return;
+  const p = await chrome.storage.local.get({ credentialUsage: {} }),
+    map = p.credentialUsage || {},
+    usage = normalizeUsage(map[credential.id]);
+  usage.requests += requests;
+  usage.characters += characters;
+  usage.errors += errors;
+  usage.dayRequests += requests;
+  usage.dayCharacters += characters;
+  if (requests) usage.lastUsedAt = Date.now();
+  if (errors) usage.lastErrorAt = Date.now();
+  await chrome.storage.local.set({
+    credentialUsage: { ...map, [credential.id]: usage },
+  });
+}
 async function credentials() {
   await secured;
   const a = await chrome.storage.local.get({
@@ -45,6 +163,10 @@ async function credentials() {
       apiKeyProviderUrl: "",
       providerUrl: DEFAULT_PROVIDER_URL,
       providerFormat: "auto",
+      credentials: [],
+      credentialMode: "manual",
+      activeCredentialId: "",
+      credentialUsage: {},
     }),
     b = await chrome.storage.session.get(["apiKey", "apiKeyProviderUrl"]);
   const url = normalizeProviderUrl(a.providerUrl),
@@ -60,12 +182,94 @@ async function credentials() {
     )
       key = rawKey;
   } catch {}
+  const keys = await credentialKeys(),
+    usageMap = a.credentialUsage || {},
+    list = buildCredentialList(a.credentials),
+    current = {
+      id: "current",
+      label: "Provedor atual",
+      url,
+      model: String(a.model || "").trim(),
+      format: a.providerFormat,
+      enabled: true,
+      autoInclude: true,
+      keyStorage: b.apiKey ? "session" : a.apiKey ? "local" : "none",
+      dailyLimit: 0,
+      createdAt: Date.now(),
+      updatedAt: 0,
+      usage: normalizeUsage(usageMap.current),
+    };
+  list.unshift(current);
+  for (const credential of list) {
+    if (credential.id !== "current")
+      credential.key =
+        credential.keyStorage === "local"
+          ? String(keys.local[credential.id] || "").trim()
+          : credential.keyStorage === "session"
+            ? String(keys.session[credential.id] || "").trim()
+            : "";
+    else credential.key = key;
+    credential.usage = normalizeUsage(usageMap[credential.id]);
+    credential.remaining = credentialRemaining(credential);
+  }
+  const mode = a.credentialMode === "auto" ? "auto" : "manual";
+  let selected = null;
+  const readyList = list.map((credential) => {
+    const ready =
+      !!credential.model &&
+      credential.enabled &&
+      (!officialProvider(credential.url) || !!credential.key) &&
+      credential.remaining > 0;
+    return { ...credential, ready };
+  });
+  if (mode === "auto") {
+    let candidates = readyList.filter(
+      (credential) =>
+        credential.id !== "current" &&
+        credential.ready &&
+        credential.autoInclude &&
+        credential.remaining > 0,
+    );
+    if (!candidates.length)
+      candidates = readyList.filter(
+        (credential) => credential.ready && credential.id === "current",
+      );
+    candidates.sort(
+      (x, y) =>
+        x.usage.dayRequests - y.usage.dayRequests ||
+        x.usage.requests - y.usage.requests ||
+        x.usage.lastUsedAt - y.usage.lastUsedAt,
+    );
+    selected =
+      candidates[0] ||
+      readyList.find((credential) => credential.ready) ||
+      readyList[0];
+  } else {
+    selected =
+      readyList.find((credential) => credential.id === a.activeCredentialId) ||
+      readyList.find((credential) => credential.id === "current") ||
+      readyList[0];
+  }
+  let blockedReason = "";
+  if (!selected?.enabled)
+    blockedReason = "Credencial pausada. Escolha outra em Configurações.";
+  else if (selected.dailyLimit > 0 && selected.remaining <= 0)
+    blockedReason = `Limite diário de ${selected.dailyLimit} requisições atingido para "${selected.label}".`;
+  else if (!selected?.ready)
+    blockedReason = officialProvider(selected.url)
+      ? "Configure URL, modelo e chave para o provedor de IA."
+      : "Configure URL e modelo do provedor de IA.";
   return {
-    model: String(a.model || "").trim(),
-    key,
-    url,
-    format: a.providerFormat,
-    ready: !!String(a.model || "").trim() && (!official || !!key),
+    id: selected.id,
+    model: selected.model,
+    key: selected.key,
+    url: selected.url,
+    format: selected.format,
+    ready: !blockedReason,
+    blockedReason,
+    mode,
+    selectedId: selected.id,
+    credentials: readyList.map(publicCredential),
   };
 }
 const siteKey = (u) => (u.protocol === "file:" ? "file://" : u.origin);
@@ -191,6 +395,15 @@ async function api(operation, input, prefs, credential, signal) {
         "Sem conexão com o provedor de IA. Confira a URL e tente novamente.",
       );
     }
+    if (res.ok) {
+      credential.deltaRequests = (credential.deltaRequests || 0) + 1;
+      credential.deltaCharacters =
+        (credential.deltaCharacters || 0) + String(input?.text || "").length;
+      if (credential.usage) credential.usage.lastUsedAt = Date.now();
+    } else {
+      credential.deltaErrors = (credential.deltaErrors || 0) + 1;
+      if (credential.usage) credential.usage.lastErrorAt = Date.now();
+    }
     if (!res.ok) {
       if (isGoogleProvider(credential.url)) {
         let data = {};
@@ -270,7 +483,12 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
           format: c.format,
           model: c.model,
           hasCredential: !!c.key,
+          label: c.credentials.find((x) => x.id === c.selectedId)?.label,
+          mode: c.mode,
         },
+        credentials: c.credentials,
+        credentialMode: c.mode,
+        activeCredentialId: c.selectedId,
         version: chrome.runtime.getManifest().version,
         siteEnabled: senderAllowed(prefs, sender),
         stats: { ...stats },
@@ -321,7 +539,8 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
     const c = await credentials();
     if (!c.ready)
       throw Error(
-        "Configure URL, modelo e chave (quando necessária) para o seu provedor de IA.",
+        c.blockedReason ||
+          "Configure URL, modelo e chave (quando necessária) para o seu provedor de IA.",
       );
     if (epochs.get(id) !== epoch)
       throw Error("Análise substituída por uma solicitação mais recente.");
@@ -338,8 +557,8 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
         : Math.min(300000, 120000 + Math.max(0, blocks.length - 1) * 15000);
     const timeout = setTimeout(() => controller.abort("timeout"), timeoutMs);
     try {
-      if (msg.type === "rewrite")
-        return await api(
+      if (msg.type === "rewrite") {
+        const result = await api(
           "rewrite",
           {
             text: msg.text,
@@ -351,6 +570,9 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
           c,
           controller.signal,
         );
+        await flushUsage(c);
+        return result;
+      }
       const all = [];
       let language = p.language === "auto" ? "pt-BR" : p.language;
       if (blocks.length) {
@@ -394,8 +616,10 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
       );
       stats.analyses++;
       stats.issues += merged.length;
+      await flushUsage(c);
       return { language, issues: merged };
     } catch (error) {
+      await flushUsage(c).catch(() => {});
       if (controller.signal.aborted && controller.signal.reason === "timeout")
         throw Error(
           "A análise demorou demais. Tente um texto menor ou revise novamente.",

@@ -18,7 +18,11 @@ const connectionStep = (text, state = "ready") => {
   $("connection-steps").textContent = text;
   $("connection-steps").dataset.state = state;
 };
-let busy = false;
+let busy = false,
+  editingId = null,
+  credentialsData = [],
+  credentialMode = "manual",
+  activeCredentialId = "current";
 function lock(value) {
   busy = value;
   document
@@ -34,6 +38,8 @@ async function credentialState() {
     bound =
       (b.apiKey ? b.apiKeyProviderUrl : a.apiKeyProviderUrl) ||
       DEFAULT_PROVIDER_URL;
+  const editing =
+    editingId && credentialsData.find((item) => item.id === editingId);
   let usable = false;
   try {
     usable =
@@ -41,9 +47,15 @@ async function credentialState() {
       normalizeProviderUrl(bound) ===
         normalizeProviderUrl($("providerUrl").value);
   } catch {}
-  $("credential-state").textContent = usable
-    ? "Uma chave está guardada para este provedor. Ela não é exibida neste formulário."
-    : "Nenhuma chave guardada para esta URL. Servidores locais podem dispensar a chave.";
+  $("credential-state").textContent = editing
+    ? editing.keyStorage === "local"
+      ? "Uma chave está guardada para esta credencial. Digite uma nova chave apenas para substituí-la."
+      : editing.keyStorage === "session"
+        ? "A chave desta credencial existe somente nesta sessão."
+        : "Esta credencial não tem chave. Digite uma chave para vinculá-la."
+    : usable
+      ? "Uma chave está guardada para este provedor. Ela não é exibida neste formulário."
+      : "Nenhuma chave guardada para esta URL. Servidores locais podem dispensar a chave.";
 }
 for (const [value, label] of Object.entries(E.languages)) {
   for (const id of ["language", "dictLanguage"]) {
@@ -119,6 +131,268 @@ async function renderPausedSites() {
     $("paused-sites").append(row);
   }
 }
+function credentialStateText(credential) {
+  return `${credential.enabled ? "Ativa" : "Pausada"} · ${
+    credential.keyStorage === "none"
+      ? "sem chave"
+      : credential.keyStorage === "local"
+        ? "chave salva"
+        : "somente sessão"
+  }`;
+}
+function credentialUsageText(credential) {
+  const today = credential.dailyLimit
+    ? `${credential.usage.dayRequests}/${credential.dailyLimit} hoje`
+    : `${credential.usage.dayRequests} hoje`;
+  return `Uso: ${credential.usage.requests} requisições no total · ${today} · ${credential.usage.dayCharacters} caracteres hoje · ${credential.usage.characters} caracteres no total · ${credential.usage.errors} erros`;
+}
+function renderCredentials() {
+  const container = $("credential-list");
+  if (!container) return;
+  const list = credentialsData;
+  container.replaceChildren();
+  for (const credential of list) {
+    const card = document.createElement("div");
+    card.className = "credential-card";
+    if (
+      credentialMode === "manual" &&
+      credential.id === activeCredentialId
+    )
+      card.classList.add("active");
+    const head = document.createElement("div");
+    head.className = "credential-head";
+    const title = document.createElement("strong");
+    title.textContent = credential.label;
+    const state = document.createElement("span");
+    state.textContent = credentialStateText(credential);
+    head.append(title, state);
+    const meta = document.createElement("small");
+    meta.textContent = `${credential.url} · ${credential.model} · ${credential.format}`;
+    const usage = document.createElement("small");
+    usage.textContent = credentialUsageText(credential);
+    const actions = document.createElement("div");
+    actions.className = "credential-actions";
+    const select = document.createElement("input");
+    select.type = "radio";
+    select.name = "credential-selected";
+    select.checked =
+      credentialMode === "manual" && credential.id === activeCredentialId;
+    select.onchange = () => setActiveCredential(credential.id);
+    const selectLabel = document.createElement("label");
+    selectLabel.className = "check";
+    selectLabel.append(select, document.createTextNode(" Usar agora"));
+    const auto = document.createElement("input");
+    auto.type = "checkbox";
+    auto.checked = credential.autoInclude;
+    auto.disabled = credential.id === "current";
+    auto.onchange = () =>
+      updateCredential(credential.id, { autoInclude: auto.checked });
+    const autoLabel = document.createElement("label");
+    autoLabel.className = "check";
+    autoLabel.append(auto, document.createTextNode(" Rotação automática"));
+    const limit = document.createElement("input");
+    limit.type = "number";
+    limit.min = "0";
+    limit.step = "1";
+    limit.value = String(credential.dailyLimit);
+    limit.disabled = credential.id === "current";
+    limit.onchange = () =>
+      updateCredential(credential.id, {
+        dailyLimit: Math.max(0, Number(limit.value) || 0),
+      });
+    const limitLabel = document.createElement("label");
+    limitLabel.className = "check";
+    limitLabel.append(limit, document.createTextNode(" Limite diário"));
+    const edit = document.createElement("button");
+    edit.type = "button";
+    edit.textContent = "Editar";
+    edit.onclick = () => editCredential(credential.id);
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.textContent = "Remover";
+    remove.disabled = credential.id === "current";
+    remove.onclick = () => removeCredential(credential.id);
+    actions.append(selectLabel, autoLabel, limitLabel, edit, remove);
+    card.append(head, meta, usage, actions);
+    container.append(card);
+  }
+}
+async function refreshCredentials(message = "") {
+  const p = await chrome.runtime.sendMessage({ type: "prefs" });
+  if (!p?.ok) throw Error(p?.error || "Não foi possível ler as credenciais.");
+  credentialsData = p.credentials || [];
+  credentialMode = p.credentialMode || "manual";
+  activeCredentialId = p.activeCredentialId || "current";
+  if ($("credential-mode-manual"))
+    $("credential-mode-manual").checked = credentialMode === "manual";
+  if ($("credential-mode-auto"))
+    $("credential-mode-auto").checked = credentialMode === "auto";
+  const saved = credentialsData.filter((c) => c.id !== "current").length;
+  if ($("credential-count"))
+    $(
+      "credential-count",
+    ).textContent = `${saved} ${saved === 1 ? "chave salva" : "chaves salvas"}`;
+  renderCredentials();
+  if (message) status(message, "success");
+}
+async function persistCredentials(message = "Credenciais atualizadas.") {
+  const stored = credentialsData.filter((credential) => credential.id !== "current");
+  await chrome.storage.local.set({
+    credentials: stored,
+    credentialMode,
+    activeCredentialId,
+  });
+  await refreshCredentials(message);
+}
+async function updateCredential(id, changes) {
+  if (id === "current") {
+    status(
+      "Salve o provedor como credencial para usar limite diário e rotação automática.",
+      "error",
+    );
+    return;
+  }
+  const index = credentialsData.findIndex((item) => item.id === id);
+  if (index < 0) return;
+  credentialsData[index] = {
+    ...credentialsData[index],
+    ...changes,
+    updatedAt: Date.now(),
+  };
+  await persistCredentials();
+}
+async function setActiveCredential(id) {
+  credentialMode = "manual";
+  activeCredentialId = id;
+  const credential = credentialsData.find((item) => item.id === id);
+  if (credential && credential.id !== "current") {
+    await chrome.storage.local.set({
+      providerUrl: credential.url,
+      providerFormat: credential.format,
+      model: credential.model,
+    });
+    $("providerUrl").value = credential.url;
+    $("providerFormat").value = credential.format;
+    $("model").value = credential.model;
+  }
+  await persistCredentials(`Usando ${credential?.label || "provedor atual"}.`);
+  await credentialState();
+}
+async function removeCredential(id) {
+  if (id === "current") {
+    status("O provedor atual não pode ser removido. Salve-o como credencial primeiro.", "error");
+    return;
+  }
+  credentialsData = credentialsData.filter((item) => item.id !== id);
+  const a = await chrome.storage.local.get({ credentialKeys: {} }),
+    b = await chrome.storage.session.get({ credentialSessionKeys: {} });
+  const localKeys = { ...a.credentialKeys },
+    sessionKeys = { ...b.credentialSessionKeys };
+  delete localKeys[id];
+  delete sessionKeys[id];
+  await chrome.storage.local.set({ credentialKeys: localKeys });
+  await chrome.storage.session.set({ credentialSessionKeys: sessionKeys });
+  if (activeCredentialId === id) activeCredentialId = "current";
+  if (editingId === id) editingId = null;
+  await persistCredentials("Credencial removida.");
+}
+async function editCredential(id) {
+  const credential = credentialsData.find((item) => item.id === id);
+  if (!credential) return;
+  editingId = credential.id === "current" ? null : credential.id;
+  if (editingId) {
+    $("providerUrl").value = credential.url;
+    $("providerFormat").value = credential.format;
+    $("model").value = credential.model;
+    $("credential-label").value = credential.label;
+    $("credential-limit").value = String(credential.dailyLimit);
+    $("credential-auto").checked = credential.autoInclude;
+    status(`Editando ${credential.label}. Digite uma chave apenas para substituir.`);
+  } else {
+    status("Configure o provedor acima e salve como credencial para gerenciar chaves.");
+  }
+  await credentialState();
+}
+async function saveCredential() {
+  await secure;
+  const providerUrl = normalizeProviderUrl($("providerUrl").value),
+    model = $("model").value.trim();
+  if (!model) throw Error("Informe o nome do modelo antes de salvar a credencial.");
+  const label =
+    $("credential-label").value.trim() ||
+    `Provedor ${credentialsData.filter((c) => c.id !== "current").length + 1}`,
+    dailyLimit = Math.max(0, Number($("credential-limit").value) || 0),
+    autoInclude = $("credential-auto").checked,
+    remember = $("remember").checked,
+    supplied = $("key").value.trim(),
+    id =
+      editingId ||
+      `credential-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
+    existing =
+      editingId && credentialsData.find((item) => item.id === editingId),
+    format = isGoogleProvider(providerUrl)
+      ? "chat"
+      : $("providerFormat").value,
+    keyStorage = supplied
+      ? remember
+        ? "local"
+        : "session"
+      : existing?.keyStorage || "none";
+  const item = {
+    id,
+    label,
+    url: providerUrl,
+    model,
+    format,
+    enabled: existing?.enabled !== false,
+    autoInclude,
+    keyStorage,
+    dailyLimit,
+    createdAt: existing?.createdAt || Date.now(),
+    updatedAt: Date.now(),
+  };
+  const stored = credentialsData.filter(
+    (credential) => credential.id !== "current" && credential.id !== id,
+  );
+  stored.push(item);
+  await chrome.storage.local.set({
+    credentials: stored,
+    credentialMode: "manual",
+    activeCredentialId: id,
+    providerUrl,
+    providerFormat: format,
+    model,
+  });
+  const a = await chrome.storage.local.get({ credentialKeys: {} }),
+    b = await chrome.storage.session.get({ credentialSessionKeys: {} });
+  const localKeys = { ...a.credentialKeys },
+    sessionKeys = { ...b.credentialSessionKeys };
+  if (supplied) {
+    if (remember) {
+      localKeys[id] = supplied;
+      delete sessionKeys[id];
+    } else {
+      sessionKeys[id] = supplied;
+      delete localKeys[id];
+    }
+  } else if (keyStorage === "none") {
+    delete localKeys[id];
+    delete sessionKeys[id];
+  }
+  await chrome.storage.local.set({ credentialKeys: localKeys });
+  await chrome.storage.session.set({ credentialSessionKeys: sessionKeys });
+  $("key").value = "";
+  $("key").type = "password";
+  $("show-key").textContent = "Mostrar";
+  $("show-key").setAttribute("aria-pressed", "false");
+  editingId = id;
+  activeCredentialId = id;
+  credentialMode = "manual";
+  await credentialState();
+  await refreshCredentials(
+    `${existing ? "Credencial atualizada" : "Nova credencial salva"}: ${label}.`,
+  );
+}
 status("Carregando configurações…", "loading");
 lock(true);
 (async () => {
@@ -162,6 +436,7 @@ lock(true);
   await terms();
   await renderPausedSites();
   await credentialState();
+  await refreshCredentials().catch(() => {});
 })()
   .catch((e) => status(e.message, "error"))
   .finally(() => lock(false));
@@ -245,6 +520,56 @@ $("forget").onclick = async () => {
     lock(false);
   }
 };
+$("save-credential").onclick = async () => {
+  lock(true);
+  try {
+    await saveCredential();
+  } catch (e) {
+    status(e.message, "error");
+  } finally {
+    lock(false);
+  }
+};
+$("use-credential").onclick = async () => {
+  lock(true);
+  try {
+    await setActiveCredential(editingId || activeCredentialId);
+    status("Credencial selecionada.", "success");
+  } catch (e) {
+    status(e.message, "error");
+  } finally {
+    lock(false);
+  }
+};
+$("remove-credential").onclick = async () => {
+  lock(true);
+  try {
+    await removeCredential(editingId || activeCredentialId);
+  } catch (e) {
+    status(e.message, "error");
+  } finally {
+    lock(false);
+  }
+};
+document
+  .querySelectorAll('input[name="credential-mode"]')
+  .forEach((element) => {
+    element.onchange = async () => {
+      credentialMode = element.value;
+      lock(true);
+      try {
+        await persistCredentials(
+          element.value === "auto"
+            ? "Rotação automática ativada. A melhor chave menos usada será escolhida."
+            : "Seleção manual ativada.",
+        );
+      } catch (e) {
+        status(e.message, "error");
+      } finally {
+        lock(false);
+      }
+    };
+  });
 $("test").onclick = async () => {
   if (busy) return;
   lock(true);
@@ -406,4 +731,12 @@ if ($("reset-badge-pos")) {
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "local" && changes.autoSites) renderPausedSites();
   if (area === "local" && changes.dictionary) terms();
+  if (
+    area === "local" &&
+    (changes.credentials ||
+      changes.credentialUsage ||
+      changes.credentialMode ||
+      changes.activeCredentialId)
+  )
+    refreshCredentials().catch(() => {});
 });

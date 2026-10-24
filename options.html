@@ -23,7 +23,8 @@
         ><a href="#preferences">02 · Experiência de revisão</a
         ><a href="#dictionary">03 · Dicionário pessoal</a
         ><a href="#sites">04 · Sites gerenciados</a
-        ><a href="#privacy">05 · Privacidade</a>
+        ><a href="#credentials">05 · Provedores e uso</a
+        ><a href="#privacy">06 · Privacidade</a>
         <div class="nav-note">
           Abra o painel no campo ativo com
           <strong>Alt + Shift + E</strong>.<br /><br />Revisões locais funcionam
@@ -153,6 +154,40 @@
           </div>
         </form>
         <div id="status" role="status" aria-live="polite"></div>
+        <section id="credentials">
+          <div class="section-label">05 / PROVEDORES E USO</div>
+          <div class="section-head-row">
+            <h2>Salve e acompanhe suas chaves.</h2>
+            <span class="badge-pill" id="credential-count">0 chaves</span>
+          </div>
+          <p class="section-description">
+            Cadastre vários provedores com modelo, formato e limite diário. A extensão mostra o consumo por chave para você não acabar com o saldo de uma só vez.
+          </p>
+          <h3>Como escolher automaticamente</h3>
+          <label class="check"><input id="credential-mode-manual" name="credential-mode" type="radio" value="manual" checked />Usar a chave marcada abaixo</label>
+          <label class="check"><input id="credential-mode-auto" name="credential-mode" type="radio" value="auto" />Melhor chave automaticamente</label>
+          <small>No modo automático, a extensão escolhe a chave disponível menos usada hoje e respeita os limites diários.</small>
+          <h3>Cadastrar ou editar</h3>
+          <label for="credential-label">Nome da credencial</label>
+          <input id="credential-label" type="text" maxlength="80" placeholder="Ex.: OpenAI principal, Groq, Google AI Studio" />
+          <div class="field-grid">
+            <div>
+              <label for="credential-limit">Limite diário (0 = sem limite)</label>
+              <input id="credential-limit" type="number" min="0" step="1" value="0" />
+            </div>
+            <div>
+              <label class="check"><input id="credential-auto" type="checkbox" checked />Incluir na rotação automática</label>
+              <small>Quando ligado, a chave pode ser escolhida no modo automático.</small>
+            </div>
+          </div>
+          <div class="row">
+            <button type="button" id="save-credential" class="primary">Salvar como nova credencial</button>
+            <button type="button" id="use-credential">Usar credencial selecionada</button>
+            <button type="button" id="remove-credential">Remover credencial</button>
+          </div>
+          <small>A chave digitada no campo “Chave da API” fica vinculada a esta credencial. Ela não é exibida no gerenciador.</small>
+          <div id="credential-list"></div>
+        </section>
         <section id="dictionary">
           <div class="section-label">03 / DICIONÁRIO</div>
           <div class="section-head-row">

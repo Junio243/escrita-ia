@@ -404,3 +404,212 @@ test("Google routes legacy Responses settings to chat and preserves model errors
     Object.assign(local, backup);
   }
 });
+
+test("gerenciador salva credenciais, escolhe a ativa e oculta chaves", async () => {
+  const backup = { ...local };
+  try {
+    const day = new Date().toISOString().slice(0, 10);
+    Object.assign(local, {
+      providerUrl: "https://api.openai.com/v1",
+      providerFormat: "chat",
+      model: "test",
+      apiKey: "sk-test",
+      apiKeyProviderUrl: "https://api.openai.com/v1",
+      credentials: [
+        {
+          id: "cred-a",
+          label: "Provedor A",
+          url: "https://provider-a.example/v1",
+          model: "model-a",
+          format: "chat",
+          enabled: true,
+          autoInclude: true,
+          keyStorage: "local",
+          dailyLimit: 0,
+        },
+        {
+          id: "cred-b",
+          label: "Provedor B",
+          url: "https://provider-b.example/v1",
+          model: "model-b",
+          format: "chat",
+          enabled: true,
+          autoInclude: true,
+          keyStorage: "local",
+          dailyLimit: 0,
+        },
+      ],
+      credentialKeys: { "cred-a": "key-a", "cred-b": "key-b" },
+      credentialMode: "manual",
+      activeCredentialId: "cred-b",
+      credentialUsage: {
+        "cred-a": {
+          requests: 4,
+          characters: 10,
+          errors: 0,
+          lastUsedAt: 0,
+          lastErrorAt: 0,
+          day,
+          dayRequests: 4,
+          dayCharacters: 10,
+        },
+        "cred-b": {
+          requests: 2,
+          characters: 20,
+          errors: 0,
+          lastUsedAt: 0,
+          lastErrorAt: 0,
+          day,
+          dayRequests: 2,
+          dayCharacters: 20,
+        },
+      },
+    });
+    const p = await send({ type: "prefs" });
+    assert.equal(p.activeCredentialId, "cred-b");
+    assert.equal(p.provider.label, "Provedor B");
+    assert.equal(p.credentials.length, 3);
+    assert(!JSON.stringify(p).includes("key-b"));
+    const callsBefore = calls;
+    const r = await send({ type: "analyze", text: "Teste B." });
+    assert.equal(r.ok, true);
+    assert.equal(lastRequest.url, "https://provider-b.example/v1/chat/completions");
+    assert.equal(
+      lastRequest.options.headers.Authorization,
+      "Bearer key-b",
+    );
+    assert.equal(calls, callsBefore + 1);
+    assert.equal(local.credentialUsage["cred-b"].dayRequests, 3);
+    assert.equal(local.credentialUsage["cred-b"].dayCharacters, 28);
+    assert.equal(local.credentialUsage["cred-a"].dayRequests, 4);
+  } finally {
+    httpStatus = 200;
+    for (const key of Object.keys(local)) delete local[key];
+    Object.assign(local, backup);
+  }
+});
+
+test("modo automático escolhe a chave menos usada no dia", async () => {
+  const backup = { ...local };
+  try {
+    const day = new Date().toISOString().slice(0, 10);
+    Object.assign(local, {
+      providerUrl: "https://api.openai.com/v1",
+      providerFormat: "chat",
+      model: "test",
+      credentials: [
+        {
+          id: "cred-a",
+          label: "Provedor A",
+          url: "https://provider-a.example/v1",
+          model: "model-a",
+          format: "chat",
+          enabled: true,
+          autoInclude: true,
+          keyStorage: "local",
+          dailyLimit: 0,
+        },
+        {
+          id: "cred-b",
+          label: "Provedor B",
+          url: "https://provider-b.example/v1",
+          model: "model-b",
+          format: "chat",
+          enabled: true,
+          autoInclude: true,
+          keyStorage: "local",
+          dailyLimit: 0,
+        },
+      ],
+      credentialKeys: { "cred-a": "key-a", "cred-b": "key-b" },
+      credentialMode: "auto",
+      activeCredentialId: "cred-a",
+      credentialUsage: {
+        "cred-a": {
+          requests: 5,
+          characters: 5,
+          errors: 0,
+          lastUsedAt: 0,
+          lastErrorAt: 0,
+          day,
+          dayRequests: 5,
+          dayCharacters: 5,
+        },
+        "cred-b": {
+          requests: 1,
+          characters: 1,
+          errors: 0,
+          lastUsedAt: 0,
+          lastErrorAt: 0,
+          day,
+          dayRequests: 1,
+          dayCharacters: 1,
+        },
+      },
+    });
+    const callsBefore = calls;
+    const r = await send({ type: "analyze", text: "Teste automático." });
+    assert.equal(r.ok, true);
+    assert.equal(lastRequest.url, "https://provider-b.example/v1/chat/completions");
+    assert.equal(
+      lastRequest.options.headers.Authorization,
+      "Bearer key-b",
+    );
+    assert.equal(calls, callsBefore + 1);
+    assert.equal(local.credentialUsage["cred-b"].dayRequests, 2);
+    assert.equal(local.credentialUsage["cred-a"].dayRequests, 5);
+  } finally {
+    httpStatus = 200;
+    for (const key of Object.keys(local)) delete local[key];
+    Object.assign(local, backup);
+  }
+});
+
+test("limite diário bloqueia a chave antes de gastar a API", async () => {
+  const backup = { ...local };
+  try {
+    const day = new Date().toISOString().slice(0, 10);
+    Object.assign(local, {
+      providerUrl: "https://provider-limite.example/v1",
+      providerFormat: "chat",
+      model: "model-limite",
+      credentials: [
+        {
+          id: "cred-limite",
+          label: "Provedor Limite",
+          url: "https://provider-limite.example/v1",
+          model: "model-limite",
+          format: "chat",
+          enabled: true,
+          autoInclude: true,
+          keyStorage: "local",
+          dailyLimit: 2,
+        },
+      ],
+      credentialKeys: { "cred-limite": "key-limite" },
+      credentialMode: "manual",
+      activeCredentialId: "cred-limite",
+      credentialUsage: {
+        "cred-limite": {
+          requests: 2,
+          characters: 20,
+          errors: 0,
+          lastUsedAt: 0,
+          lastErrorAt: 0,
+          day,
+          dayRequests: 2,
+          dayCharacters: 20,
+        },
+      },
+    });
+    const callsBefore = calls;
+    const r = await send({ type: "analyze", text: "Texto com limite diário." });
+    assert.equal(r.ok, false);
+    assert.match(r.error, /Limite diário/);
+    assert.equal(calls, callsBefore);
+  } finally {
+    httpStatus = 200;
+    for (const key of Object.keys(local)) delete local[key];
+    Object.assign(local, backup);
+  }
+});

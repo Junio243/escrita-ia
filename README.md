@@ -59,6 +59,7 @@ A **Escrita IA** foi projetada para resolver um problema comum das ferramentas d
 - Estatísticas da sessão (análises, ocorrências, sugestões aplicadas) e controle rápido do **Modo Exigente** no popup.
 - Revisão local sem IA para palavras e espaços duplicados e espaço antes de pontuação; com **Português · Brasil** ou **Português · Portugal** selecionado, também verifica acentuação ampliada, grafia (`concerteza`, `derepente`, `porisso`, `apartir`), verbos impessoais (`fazer`/`haver`), crase e pleonasmos.
 - Banco local de correções offline: abreviaturas e formas informais (`vc`, `vcs`, `tmb`, `pq`, `qdo`, `pra`, `pro`, `hj`, `amn`, `msg`, `obrigad`, `blz`, `sds`, `bjs`, `tdb`, `valeu`, `flw`) são sugeridas na revisão local sem chamada à IA.
+- Gerenciador de chaves e uso: salve vários provedores com modelo, formato e limite diário; use uma chave manual ou ative a rotação automática para escolher a chave pronta e menos usada no dia. As opções e o popup mostram requisições, caracteres e erros para você não gastar o saldo de uma só vez.
 - Dicionário pessoal separado por idioma, com busca em tempo real, contador de termos e importação/exportação em JSON.
 - Gerenciamento de sites pausados diretamente na página de Configurações e predefinições para **Google AI Studio**, **OpenAI**, **OpenRouter**, **Groq**, **Ollama** e **LM Studio**.
 - Modo Exigente para revisão estilística mais rigorosa.
@@ -390,6 +391,6 @@ As regras de retenção, privacidade e cobrança dependem do provedor escolhido.
 
 ## Versão
 
-Versão atual: **3.2.1**.
+Versão atual: **3.2.2**.
 
 Consulte [LEIA-ME.md](LEIA-ME.md) para instruções completas e [VALIDACAO.md](VALIDACAO.md) para os resultados de validação.

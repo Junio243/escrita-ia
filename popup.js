@@ -47,6 +47,41 @@ async function check(reconnect = false) {
       p.hasKey ? "Preenchida · conexão não testada" : "Configuração incompleta",
     );
     line("Assistente geral", p.prefs.assistantEnabled ? "Ativo" : "Pausado");
+    const activeCredential = p.credentials?.find(
+      (credential) => credential.id === p.activeCredentialId,
+    );
+    if (p.credentialMode)
+      line(
+        "Escolha da chave",
+        p.credentialMode === "auto"
+          ? "Automática · melhor chave menos usada"
+          : "Manual",
+      );
+    if (activeCredential) {
+      line("Chave ativa", activeCredential.label);
+      line(
+        "Limite diário",
+        activeCredential.dailyLimit
+          ? `${activeCredential.usage.dayRequests}/${activeCredential.dailyLimit} requisições · ${activeCredential.remaining} restantes`
+          : "Sem limite diário",
+      );
+      line(
+        "Uso hoje",
+        `${activeCredential.usage.dayRequests} requisições · ${activeCredential.usage.dayCharacters} caracteres`,
+      );
+      line(
+        "Uso total",
+        `${activeCredential.usage.requests} requisições · ${activeCredential.usage.characters} caracteres · ${activeCredential.usage.errors} erros`,
+      );
+    }
+    const savedCredentials = p.credentials?.filter(
+      (credential) => credential.id !== "current",
+    );
+    if (savedCredentials?.length)
+      line(
+        "Chaves salvas",
+        `${savedCredentials.length} · ${savedCredentials.filter((credential) => credential.autoInclude).length} na rotação automática`,
+      );
     $("enabled").checked = p.prefs.assistantEnabled;
     $("analyses").textContent = p.stats?.analyses ?? 0;
     $("findings").textContent = p.stats?.issues ?? 0;
