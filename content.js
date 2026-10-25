@@ -915,11 +915,13 @@
       return;
     }
     if (msg.type === "togglePanel") {
-      if (current && enabled) {
+      const opened = !!(current && enabled);
+      if (opened) {
         setPanel(U.panel.hidden);
         if (!U.panel.hidden) selectionUI();
         layout();
       }
+      reply({ opened, fieldDetected: !!current, enabled });
       return;
     }
     if (msg.type === "diagnose") {

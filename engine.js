@@ -15,7 +15,7 @@
     academic:'Acadêmico e técnico',
     creative:'Mais criativo'
   };
-  const norm=t=>t.normalize('NFC').toLocaleLowerCase();
+  const norm=t=>t.normalize('NFC').toLowerCase();
   function metrics(text,locale='pt-BR') {
     const lang=locale==='auto'?'pt-BR':locale;
     return {words:[...new Intl.Segmenter(lang,{granularity:'word'}).segment(text)].filter(x=>x.isWordLike).length,characters:[...new Intl.Segmenter(lang,{granularity:'grapheme'}).segment(text)].length};

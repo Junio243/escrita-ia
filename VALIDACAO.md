@@ -2,6 +2,12 @@
 
 Data: 24 de outubro de 2026.
 
+## Versão 3.2.4 — reforços de robustez e sincronização
+
+- **Robustez:** comparações de texto usam `toLowerCase()` independente do idioma do sistema; URLs inválidas caem para o provedor padrão em vez de travar o serviço; credenciais sem URL são ignoradas em vez de serem tratadas como OpenAI.
+- **Sincronização:** a página de configurações reage a mudanças de preferências feitas no popup e em outras janelas; o botão do painel retorna se ele realmente abriu; a remoção de credencial limpa também o histórico de uso.
+- **Testes automatizados**: 59 testes unitários aprovados (`npm test`), demonstração aprovada (`npm run test:site`) e extensão MV3 real aprovada em Chrome (`npm run test:browser`).
+
 ## Versão 3.2.3 — correções de auditoria, segurança e gramática local
 
 - **Opções (`options.html`, `options.js`)**: nova seção “Provedores e uso” para salvar, editar, remover, usar uma credencial e incluir chaves na rotação automática. A chave digitada fica vinculada à credencial e não é exibida no gerenciador.

@@ -164,8 +164,14 @@ if ($("open-panel")) {
   $("open-panel").onclick = async () => {
     try {
       if (tab?.id != null) {
-        await chrome.tabs.sendMessage(tab.id, { type: "togglePanel" });
-        $("status").textContent = "Comando enviado ao campo ativo da página.";
+        const result = await chrome.tabs.sendMessage(tab.id, { type: "togglePanel" });
+        if (result?.opened) {
+          $("status").textContent = "Painel aberto no campo ativo da página.";
+        } else if (result && !result.enabled) {
+          $("status").textContent = "Ative o assistente antes de abrir o painel.";
+        } else {
+          $("status").textContent = "Foque um campo de texto na página primeiro.";
+        }
       }
     } catch {
       $("status").textContent = "Foque um campo de texto na página primeiro.";

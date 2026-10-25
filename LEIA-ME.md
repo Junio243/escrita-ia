@@ -1,4 +1,4 @@
-# Escrita IA 3.2.3
+# Escrita IA 3.2.4
 
 Assistente de escrita integrado aos campos do navegador. A análise começa após 400 milissegundos sem digitação. As sugestões aparecem grifadas; **nenhuma alteração é aplicada sem seu clique**.
 
@@ -8,7 +8,7 @@ Se os arquivos da pasta instalada já foram atualizados por este atendimento:
 
 1. Abra `chrome://extensions`.
 2. No cartão **Escrita IA**, clique em **Recarregar** (seta circular). Mantenha o **Modo do desenvolvedor** ligado.
-3. Confirme a versão **3.2.3** e recarregue os sites já abertos.
+3. Confirme a versão **3.2.4** e recarregue os sites já abertos.
 
 Ao manter a mesma pasta, a chave e as preferências existentes permanecem no armazenamento da extensão. A preferência antiga de aplicação automática continua migrada para sugestões por clique.
 

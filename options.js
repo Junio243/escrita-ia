@@ -301,6 +301,7 @@ async function removeCredential(id) {
   await chrome.storage.local.set({ credentialKeys: localKeys, credentialUsage: usage });
   await chrome.storage.session.set({ credentialSessionKeys: sessionKeys });
   if (activeCredentialId === id) activeCredentialId = "current";
+  if (selectedCredentialId === id) selectedCredentialId = "current";
   if (editingId === id) editingId = null;
   await persistCredentials("Credencial removida.");
 }
@@ -394,6 +395,7 @@ async function saveCredential() {
   $("show-key").textContent = "Mostrar";
   $("show-key").setAttribute("aria-pressed", "false");
   editingId = id;
+  selectedCredentialId = id;
   activeCredentialId = id;
   credentialMode = "manual";
   await credentialState();
@@ -539,7 +541,7 @@ $("forget").onclick = async () => {
     await chrome.storage.local.remove(["apiKey", "apiKeyProviderUrl"]);
     await chrome.storage.session.remove(["apiKey", "apiKeyProviderUrl"]);
     $("key").value = "";
-    status("Chave removida.", "success");
+    status("Chave do provedor atual removida.", "success");
     await credentialState();
   } catch (e) {
     status(e.message, "error");
@@ -755,15 +757,45 @@ if ($("reset-badge-pos")) {
     status("Posição do botão flutuante restaurada para o padrão.", "success");
   };
 }
+async function syncPreferenceInputs() {
+  const p = await chrome.storage.local.get({
+    assistantEnabled: true,
+    language: "auto",
+    picky: false,
+    theme: "system",
+    providerUrl: DEFAULT_PROVIDER_URL,
+    providerFormat: "auto",
+    model: "gpt-4.1-mini",
+  });
+  if ($("enabled")) $("enabled").checked = p.assistantEnabled;
+  if ($("language")) $("language").value = p.language;
+  if ($("picky")) $("picky").checked = p.picky;
+  if ($("theme")) $("theme").value = p.theme;
+  if ($("providerUrl")) $("providerUrl").value = p.providerUrl;
+  if ($("providerFormat")) $("providerFormat").value = p.providerFormat;
+  if ($("model")) $("model").value = p.model;
+  theme(p.theme);
+}
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === "local" && changes.autoSites) renderPausedSites();
-  if (area === "local" && changes.dictionary) terms();
+  if (area !== "local") return;
+  if (changes.autoSites) renderPausedSites();
+  if (changes.dictionary) terms();
   if (
-    area === "local" &&
-    (changes.credentials ||
-      changes.credentialUsage ||
-      changes.credentialMode ||
-      changes.activeCredentialId)
+    changes.credentials ||
+    changes.credentialUsage ||
+    changes.credentialMode ||
+    changes.activeCredentialId
   )
     refreshCredentials().catch(() => {});
+  const preferenceKeys = [
+    "assistantEnabled",
+    "language",
+    "picky",
+    "theme",
+    "providerUrl",
+    "providerFormat",
+    "model",
+  ];
+  if (Object.keys(changes).some((key) => preferenceKeys.includes(key)))
+    syncPreferenceInputs().catch(() => {});
 });

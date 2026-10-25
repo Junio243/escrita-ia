@@ -7,7 +7,7 @@
 *Revise ortografia, gramática, pontuação, tipografia, estilo e tom diretamente em qualquer campo de texto da web — combinando um motor local ultrarrápido com o poder do seu próprio modelo de IA (nuvem ou local).*
 
 [![CI](https://img.shields.io/github/actions/workflow/status/Junio243/escrita-ia/ci.yml?style=for-the-badge&logo=githubactions&logoColor=white&label=CI%20%2F%20Testes)](https://github.com/Junio243/escrita-ia/actions/workflows/ci.yml)
-[![Versão](https://img.shields.io/badge/Vers%C3%A3o-3.2.3-2563EB?style=for-the-badge&logo=semanticrelease&logoColor=white)](https://github.com/Junio243/escrita-ia/releases/tag/3.2.3)
+[![Versão](https://img.shields.io/badge/Vers%C3%A3o-3.2.4-2563EB?style=for-the-badge&logo=semanticrelease&logoColor=white)](https://github.com/Junio243/escrita-ia/releases/tag/3.2.4)
 [![Chrome](https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](https://developer.chrome.com/docs/extensions/develop/mv3-intro)
 [![Node.js](https://img.shields.io/badge/Node.js-22%20LTS-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 [![Idiomas](https://img.shields.io/badge/Idiomas-34%20%2836%20variantes%29-8B5CF6?style=for-the-badge)](#provedores-de-ia-suportados-cloud--local)
@@ -33,7 +33,7 @@
 ## 🧭 Índice de Navegação
 
 1. [Sobre o Projeto & Arquitetura Híbrida](#-sobre-o-projeto--arquitetura-híbrida)
-2. [Novidades da Geração 3.x (v3.0 a v3.2.3)](#-novidades-da-geração-3x-v30-a-v323)
+2. [Novidades da Geração 3.x (v3.0 a v3.2.4)](#-novidades-da-geração-3x-v30-a-v324)
 3. [Galeria Visual da Extensão & Estúdio Web](#-galeria-visual-da-extensão--estúdio-web)
 4. [Engenharia de Revisão & Os 9 Modos de Reescrita](#-engenharia-de-revisão--os-9-modos-de-reescrita)
 5. [Ecossistema de Compatibilidade (Sites & Editores)](#-ecossistema-de-compatibilidade-sites--editores)
@@ -78,9 +78,9 @@ A **Escrita IA** foi projetada para resolver um problema comum das ferramentas d
 
 ---
 
-## 🚀 Novidades da Geração 3.x (v3.0 a v3.2.3)
+## 🚀 Novidades da Geração 3.x (v3.0 a v3.2.4)
 
-### Destaques da Versão `3.2.3` (Atual)
+### Destaques da Versão `3.2.4` (Atual)
 - 🛠️ **Correções de Auditoria:** loop de reanálise eliminado, cache de respostas preservado, rotação automática penaliza chaves com erro recente e o painel exige interação real do usuário.
 - 🔑 **Gerenciador de Chaves e Uso:** cadastro de vários provedores, seleção manual, rotação automática pela chave menos usada no dia e limite diário por credencial.
 - 📊 **Contadores de API:** requisições, caracteres e erros exibidos no popup e nas configurações para evitar gastar o saldo de uma só vez.
@@ -395,6 +395,6 @@ As regras de retenção, privacidade e cobrança dependem do provedor escolhido.
 
 ## Versão
 
-Versão atual: **3.2.3**.
+Versão atual: **3.2.4**.
 
 Consulte [LEIA-ME.md](LEIA-ME.md) para instruções completas e [VALIDACAO.md](VALIDACAO.md) para os resultados de validação.

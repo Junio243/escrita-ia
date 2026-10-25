@@ -108,7 +108,8 @@ function buildCredentialList(stored) {
   for (const [index, item] of items.entries()) {
     let url;
     try {
-      url = normalizeProviderUrl(item?.url || DEFAULT_PROVIDER_URL);
+      if (!item?.url) continue;
+      url = normalizeProviderUrl(item.url);
     } catch {
       continue;
     }
@@ -178,10 +179,11 @@ async function credentials() {
       credentialUsage: {},
     }),
     b = await chrome.storage.session.get(["apiKey", "apiKeyProviderUrl"]);
-  const url = normalizeProviderUrl(a.providerUrl),
-    official =
-      new URL(url).hostname === "api.openai.com" || isGoogleProvider(url),
-    rawKey = b.apiKey || a.apiKey || "",
+  let url = DEFAULT_PROVIDER_URL;
+  try {
+    url = normalizeProviderUrl(a.providerUrl);
+  } catch {}
+  const rawKey = b.apiKey || a.apiKey || "",
     boundUrl = (b.apiKey ? b.apiKeyProviderUrl : a.apiKeyProviderUrl) || "";
   let key = "";
   try {
