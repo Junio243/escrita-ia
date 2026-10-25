@@ -2,13 +2,14 @@
 
 Data: 24 de outubro de 2026.
 
-## Versão 3.2.2 — gerenciador de chaves, rotação automática e consumo
+## Versão 3.2.3 — correções de auditoria, segurança e gramática local
 
 - **Opções (`options.html`, `options.js`)**: nova seção “Provedores e uso” para salvar, editar, remover, usar uma credencial e incluir chaves na rotação automática. A chave digitada fica vinculada à credencial e não é exibida no gerenciador.
 - **Serviço de fundo (`background.js`)**: credenciais são normalizadas, há seleção manual por `activeCredentialId` e modo automático que escolhe a credencial pronta menos usada no dia, respeitando `autoInclude` e limites diários.
 - **Uso persistente (`credentialUsage`)**: contadores por chave de requisições, caracteres, erros, último uso e consumo do dia; o popup exibe limite, uso hoje e uso total para evitar gastar todo o saldo de uma vez.
 - **Compatibilidade**: a chave única antiga continua funcionando como “Provedor atual”.
-- **Testes automatizados**: 51 testes unitários aprovados (`npm test`), testes da demonstração aprovados (`npm run test:site`) e extensão MV3 real aprovada em Chrome (`npm run test:browser`).
+- **Testes automatizados**: 59 testes unitários aprovados (`npm test`), testes da demonstração aprovados (`npm run test:site`) e extensão MV3 real aprovada em Chrome (`npm run test:browser`).
+- **Correções de auditoria**: gravações de uso não invalidam mais o cache nem disparam novas análises; o painel usa Shadow DOM fechado e exige interação real; campos de cartão/verificação são excluídos; regras locais evitam falsos positivos como `publico`, `ira`, `O agente vai` e sujeitos compostos; `Fazem três meses` agora sugere `Faz três meses`; a detecção automática reconhece português sem acentos e ignora armadilhas em inglês.
 
 Data: 19 de outubro de 2026.
 

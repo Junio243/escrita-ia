@@ -41,15 +41,24 @@ async function check(reconnect = false) {
     line("Provedor", p.provider.url);
     line("Formato", p.provider.format);
     line("Modelo", p.provider.model || "Não configurado");
-    line("Credencial", p.provider.hasCredential ? "Configurada" : "Sem chave");
-    line(
-      "Configuração de IA",
-      p.hasKey ? "Preenchida · conexão não testada" : "Configuração incompleta",
-    );
-    line("Assistente geral", p.prefs.assistantEnabled ? "Ativo" : "Pausado");
     const activeCredential = p.credentials?.find(
       (credential) => credential.id === p.activeCredentialId,
     );
+    line(
+      "Credencial",
+      activeCredential?.hasKey ?? p.provider.hasCredential
+        ? "Configurada"
+        : "Sem chave",
+    );
+    line(
+      "Configuração de IA",
+      p.blockedReason
+        ? p.blockedReason
+        : p.hasKey
+          ? "Preenchida · conexão não testada"
+          : "Configuração incompleta",
+    );
+    line("Assistente geral", p.prefs.assistantEnabled ? "Ativo" : "Pausado");
     if (p.credentialMode)
       line(
         "Escolha da chave",
@@ -91,9 +100,11 @@ async function check(reconnect = false) {
       : p.hasKey
         ? "Seu assistente está ativo."
         : "Comece com a revisão local.";
-    $("summary").textContent = p.hasKey
-      ? "Configuração preenchida. Teste a conexão nas configurações."
-      : "Conecte um provedor para revisar gramática e explorar reescritas.";
+    $("summary").textContent = p.blockedReason
+      ? p.blockedReason
+      : p.hasKey
+        ? "Configuração preenchida. Teste a conexão nas configurações."
+        : "Conecte um provedor para revisar gramática e explorar reescritas.";
     line("Análises nesta sessão", String(p.stats?.analyses ?? 0));
     line("Ocorrências encontradas", String(p.stats?.issues ?? 0));
     line("Sugestões aplicadas", String(p.stats?.applied ?? 0));

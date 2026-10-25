@@ -34,7 +34,7 @@ const profile = process.env.TEST_PROFILE || path.resolve("work/chrome-v2-test");
       await chrome.storage.local.clear();
       await chrome.storage.session.clear();
     });
-    const fixture = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="require-trusted-types-for 'script'"><title>Escrita IA · Teste de integração</title><style>body{font:16px system-ui;background:#f4f3fb;color:#25213e;padding:50px}main{width:630px}h1{font-size:32px}textarea,input,[contenteditable]{display:block;width:570px;min-height:95px;margin:22px 0;padding:18px;font:18px/1.6 system-ui;border:1px solid #bcb5d5;border-radius:12px;background:#fff}input{min-height:40px}.label{color:#776b93}</style></head><body><main><p class="label">UM ASSISTENTE QUE RESPEITA SUA VOZ</p><h1>Escreva. Revise. Faça sentido.</h1><textarea id="plain" autofocus placeholder="Digite sua mensagem"></textarea><div id="prompt-textarea" class="ProseMirror" contenteditable="true"><p><b>Olá</b> voce</p></div><input id="password" type="password"><div id="dynamic"></div></main></body></html>`;
+    const fixture = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="require-trusted-types-for 'script'"><title>Escrita IA · Teste de integração</title><style>body{font:16px system-ui;background:#f4f3fb;color:#25213e;padding:50px}main{width:630px}h1{font-size:32px}textarea,input,[contenteditable]{display:block;width:570px;min-height:95px;margin:22px 0;padding:18px;font:18px/1.6 system-ui;border:1px solid #bcb5d5;border-radius:12px;background:#fff}input{min-height:40px}.label{color:#776b93}</style></head><body><main><p class="label">UM ASSISTENTE QUE RESPEITA SUA VOZ</p><h1>Escreva. Revise. Faça sentido.</h1><textarea id="plain" autofocus placeholder="Digite sua mensagem"></textarea><div id="prompt-textarea" class="ProseMirror" contenteditable="true"><p><b>Olá</b> voce</p></div><input id="password" type="password"><input id="cardnumber" type="text" name="ccnum" autocomplete="cc-number"><div id="dynamic"></div></main></body></html>`;
     await context.route("http://fixture.test/**", (r) =>
       r.fulfill({ contentType: "text/html", body: fixture }),
     );
@@ -294,7 +294,9 @@ const profile = process.env.TEST_PROFILE || path.resolve("work/chrome-v2-test");
     });
     await page.locator("#password").fill("voce");
     assert(await badge.isHidden());
-    console.log("PASS password exclusion");
+    await page.locator("#cardnumber").fill("4111111111111111");
+    assert(await badge.isHidden());
+    console.log("PASS password and card number exclusion");
     await page.evaluate(() => {
       const field = document.createElement("textarea");
       field.id = "new";

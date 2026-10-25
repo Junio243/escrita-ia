@@ -13,8 +13,11 @@ export function requestBody(operation,input,prefs,model) {
   const task=operation==='analyze'?
     'Identifique ortografia, acentos, hífen, Acordo Ortográfico conforme a variante, concordância verbal e nominal, regência, preposições, crase, flexões, contrações, vírgulas e ponto ausente, aspas, tipografia, redundância, repetição, prolixidade e tom inadequado. Não suponha que toda mensagem seja corporativa. Retorne apenas erros fundamentados e sugestões úteis. Para cada ocorrência copie quote EXATAMENTE do trecho principal, incluindo acentos e espaços, e left/right com até 40 caracteres literais imediatamente antes/depois para desambiguar repetições. Para pontuação ausente, use a palavra adjacente como quote e inclua a pontuação na substituição. Não aponte erros do contexto externo. Forneça 1 a 3 substituições e uma explicação didática curta. Ignore os termos do dicionário apenas na ortografia, nunca em regras gramaticais. '+(prefs.picky?'Modo Exigente: acrescente sugestões de rigor estilístico para escrita formal, categorizadas como style ou tone.':'Modo normal: evite preferências estilísticas subjetivas e excesso de alertas.'):
     'Gere três versões alternativas do trecho selecionado com o estilo '+E.styles[input.style]+'. Preserve sentido e informações. Não inclua explicações nas alternativas.';
-  return {model,store:false,max_output_tokens:6000,instructions:base+language+' '+task,
-    input:JSON.stringify({text:input.text,contextBefore:input.before||'',contextAfter:input.after||'',dictionary:prefs.dictionary||{}}),
+  const dictionary = prefs.language && prefs.language !== 'auto'
+    ? { [prefs.language]: prefs.dictionary?.[prefs.language] || [] }
+    : prefs.dictionary || {};
+  return {model,store:false,max_output_tokens:2048,instructions:base+language+' '+task,
+    input:JSON.stringify({text:input.text,contextBefore:input.before||'',contextAfter:input.after||'',dictionary}),
     text:{format:{type:'json_schema',name:operation==='analyze'?'writing_analysis':'writing_rewrite',strict:true,schema:operation==='analyze'?analysisSchema:rewriteSchema}}};
 }
 export function parseResponse(data,operation) {

@@ -37,7 +37,10 @@ async function settings() {
     badgePosition: p.badgePosition,
   };
 }
-const dayStamp = () => new Date().toISOString().slice(0, 10);
+const dayStamp = () => {
+  const date = new Date();
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+};
 function normalizeUsage(value) {
   const usage = {
     requests: Number(value?.requests) || 0,
@@ -83,6 +86,7 @@ function publicCredential(credential) {
   } = credential;
   return {
     ...safe,
+    hasKey: !!credential.key,
     usage: { ...credential.usage },
     remaining:
       credential.dailyLimit > 0
@@ -132,28 +136,33 @@ function buildCredentialList(stored) {
   }
   return list;
 }
-async function flushUsage(credential) {
-  if (!credential) return;
-  const requests = credential.deltaRequests || 0,
-    characters = credential.deltaCharacters || 0,
-    errors = credential.deltaErrors || 0;
-  credential.deltaRequests = 0;
-  credential.deltaCharacters = 0;
-  credential.deltaErrors = 0;
-  if (!requests && !characters && !errors) return;
-  const p = await chrome.storage.local.get({ credentialUsage: {} }),
-    map = p.credentialUsage || {},
-    usage = normalizeUsage(map[credential.id]);
-  usage.requests += requests;
-  usage.characters += characters;
-  usage.errors += errors;
-  usage.dayRequests += requests;
-  usage.dayCharacters += characters;
-  if (requests) usage.lastUsedAt = Date.now();
-  if (errors) usage.lastErrorAt = Date.now();
-  await chrome.storage.local.set({
-    credentialUsage: { ...map, [credential.id]: usage },
+let usageWrites = Promise.resolve();
+function flushUsage(credential) {
+  const task = usageWrites.then(async () => {
+    if (!credential) return;
+    const requests = credential.deltaRequests || 0,
+      characters = credential.deltaCharacters || 0,
+      errors = credential.deltaErrors || 0;
+    credential.deltaRequests = 0;
+    credential.deltaCharacters = 0;
+    credential.deltaErrors = 0;
+    if (!requests && !characters && !errors) return;
+    const p = await chrome.storage.local.get({ credentialUsage: {} }),
+      map = p.credentialUsage || {},
+      usage = normalizeUsage(map[credential.id]);
+    usage.requests += requests;
+    usage.characters += characters;
+    usage.errors += errors;
+    usage.dayRequests += requests;
+    usage.dayCharacters += characters;
+    if (requests) usage.lastUsedAt = Date.now();
+    if (errors) usage.lastErrorAt = Date.now();
+    await chrome.storage.local.set({
+      credentialUsage: { ...map, [credential.id]: usage },
+    });
   });
+  usageWrites = task.catch(() => {});
+  return task;
 }
 async function credentials() {
   await secured;
@@ -236,6 +245,8 @@ async function credentials() {
       );
     candidates.sort(
       (x, y) =>
+        x.usage.errors - y.usage.errors ||
+        x.usage.lastErrorAt - y.usage.lastErrorAt ||
         x.usage.dayRequests - y.usage.dayRequests ||
         x.usage.requests - y.usage.requests ||
         x.usage.lastUsedAt - y.usage.lastUsedAt,
@@ -312,6 +323,8 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 chrome.storage.onChanged.addListener((changes, area) => {
   if (!["local", "session"].includes(area)) return;
+  const keys = Object.keys(changes);
+  if (keys.length === 1 && keys[0] === "credentialUsage") return;
   cache.clear();
   workingFormats.clear();
   for (const job of jobs.values()) job.abort();
@@ -454,9 +467,13 @@ async function api(operation, input, prefs, credential, signal) {
       // Remember structures that returned HTTP 200 but unparsable bodies so
       // future requests skip them and go straight to a working format.
       if (workingFormats.get(formatKey)?.transport === attempt.transport) {
-        const failed = new Set(workingFormats.get(formatKey).failed || []);
+        const knownFormat = workingFormats.get(formatKey);
+        const failed = new Set(knownFormat.failed || []);
         failed.add(attempt.structure);
-        workingFormats.set(formatKey, { ...attempt, failed: [...failed] });
+        workingFormats.set(formatKey, {
+          ...knownFormat,
+          failed: [...failed],
+        });
       }
     }
   }
@@ -478,6 +495,7 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
       return {
         prefs,
         hasKey: c.ready,
+        blockedReason: c.blockedReason,
         provider: {
           url: c.url,
           format: c.format,
@@ -500,6 +518,14 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
     }
     if (msg.type === "applied") {
       stats.applied++;
+      return {};
+    }
+    if (msg.type === "setBadgePosition") {
+      const x = Number(msg.position?.x),
+        y = Number(msg.position?.y);
+      if (!Number.isFinite(x) || !Number.isFinite(y))
+        throw Error("Posição inválida.");
+      await chrome.storage.local.set({ badgePosition: { x, y } });
       return {};
     }
     if (msg.type === "cancel") {

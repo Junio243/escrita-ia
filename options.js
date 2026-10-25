@@ -20,13 +20,14 @@ const connectionStep = (text, state = "ready") => {
 };
 let busy = false,
   editingId = null,
+  selectedCredentialId = "current",
   credentialsData = [],
   credentialMode = "manual",
   activeCredentialId = "current";
 function lock(value) {
   busy = value;
   document
-    .querySelectorAll("#form input,#form select,#form button")
+    .querySelectorAll("#form input,#form select,#form button,#credentials input,#credentials select,#credentials button")
     .forEach((control) => {
       control.disabled = value;
     });
@@ -48,11 +49,11 @@ async function credentialState() {
         normalizeProviderUrl($("providerUrl").value);
   } catch {}
   $("credential-state").textContent = editing
-    ? editing.keyStorage === "local"
-      ? "Uma chave está guardada para esta credencial. Digite uma nova chave apenas para substituí-la."
-      : editing.keyStorage === "session"
-        ? "A chave desta credencial existe somente nesta sessão."
-        : "Esta credencial não tem chave. Digite uma chave para vinculá-la."
+    ? editing.hasKey
+      ? editing.keyStorage === "local"
+        ? "Uma chave está guardada para esta credencial. Digite uma nova chave apenas para substituí-la."
+        : "A chave desta credencial existe somente nesta sessão."
+      : "Esta credencial não tem chave. Digite uma chave para vinculá-la."
     : usable
       ? "Uma chave está guardada para este provedor. Ela não é exibida neste formulário."
       : "Nenhuma chave guardada para esta URL. Servidores locais podem dispensar a chave.";
@@ -132,13 +133,12 @@ async function renderPausedSites() {
   }
 }
 function credentialStateText(credential) {
-  return `${credential.enabled ? "Ativa" : "Pausada"} · ${
-    credential.keyStorage === "none"
-      ? "sem chave"
-      : credential.keyStorage === "local"
-        ? "chave salva"
-        : "somente sessão"
-  }`;
+  const keyState = credential.hasKey
+    ? credential.keyStorage === "local"
+      ? "chave salva"
+      : "somente sessão"
+    : "sem chave";
+  return `${credential.enabled ? "Ativa" : "Pausada"} · ${keyState}`;
 }
 function credentialUsageText(credential) {
   const today = credential.dailyLimit
@@ -154,17 +154,19 @@ function renderCredentials() {
   for (const credential of list) {
     const card = document.createElement("div");
     card.className = "credential-card";
-    if (
-      credentialMode === "manual" &&
-      credential.id === activeCredentialId
-    )
-      card.classList.add("active");
+    if (credential.id === activeCredentialId) card.classList.add("active");
     const head = document.createElement("div");
     head.className = "credential-head";
     const title = document.createElement("strong");
     title.textContent = credential.label;
     const state = document.createElement("span");
-    state.textContent = credentialStateText(credential);
+    state.textContent =
+      credentialStateText(credential) +
+      (credential.id === activeCredentialId
+        ? credentialMode === "auto"
+          ? " · escolhida automaticamente"
+          : " · em uso"
+        : "");
     head.append(title, state);
     const meta = document.createElement("small");
     meta.textContent = `${credential.url} · ${credential.model} · ${credential.format}`;
@@ -177,7 +179,10 @@ function renderCredentials() {
     select.name = "credential-selected";
     select.checked =
       credentialMode === "manual" && credential.id === activeCredentialId;
-    select.onchange = () => setActiveCredential(credential.id);
+    select.onchange = () => {
+      selectedCredentialId = credential.id;
+      setActiveCredential(credential.id);
+    };
     const selectLabel = document.createElement("label");
     selectLabel.className = "check";
     selectLabel.append(select, document.createTextNode(" Usar agora"));
@@ -223,6 +228,7 @@ async function refreshCredentials(message = "") {
   credentialsData = p.credentials || [];
   credentialMode = p.credentialMode || "manual";
   activeCredentialId = p.activeCredentialId || "current";
+  selectedCredentialId = activeCredentialId;
   if ($("credential-mode-manual"))
     $("credential-mode-manual").checked = credentialMode === "manual";
   if ($("credential-mode-auto"))
@@ -284,13 +290,15 @@ async function removeCredential(id) {
     return;
   }
   credentialsData = credentialsData.filter((item) => item.id !== id);
-  const a = await chrome.storage.local.get({ credentialKeys: {} }),
+  const a = await chrome.storage.local.get({ credentialKeys: {}, credentialUsage: {} }),
     b = await chrome.storage.session.get({ credentialSessionKeys: {} });
   const localKeys = { ...a.credentialKeys },
-    sessionKeys = { ...b.credentialSessionKeys };
+    sessionKeys = { ...b.credentialSessionKeys },
+    usage = { ...a.credentialUsage };
   delete localKeys[id];
   delete sessionKeys[id];
-  await chrome.storage.local.set({ credentialKeys: localKeys });
+  delete usage[id];
+  await chrome.storage.local.set({ credentialKeys: localKeys, credentialUsage: usage });
   await chrome.storage.session.set({ credentialSessionKeys: sessionKeys });
   if (activeCredentialId === id) activeCredentialId = "current";
   if (editingId === id) editingId = null;
@@ -484,6 +492,25 @@ async function savePreferences(announce = true) {
     picky: $("picky").checked,
     theme: $("theme").value,
   });
+  if (credentialMode === "manual" && activeCredentialId !== "current") {
+    const storedCredentials = await chrome.storage.local.get({ credentials: [] }),
+      list = Array.isArray(storedCredentials.credentials)
+        ? storedCredentials.credentials
+        : [],
+      index = list.findIndex((item) => item?.id === activeCredentialId);
+    if (index >= 0) {
+      list[index] = {
+        ...list[index],
+        url: providerUrl,
+        model,
+        format: isGoogleProvider(providerUrl)
+          ? "chat"
+          : $("providerFormat").value,
+        updatedAt: Date.now(),
+      };
+      await chrome.storage.local.set({ credentials: list });
+    }
+  }
   $("providerUrl").value = providerUrl;
   if (isGoogleProvider(providerUrl)) $("providerFormat").value = "chat";
   $("key").value = "";
@@ -533,7 +560,7 @@ $("save-credential").onclick = async () => {
 $("use-credential").onclick = async () => {
   lock(true);
   try {
-    await setActiveCredential(editingId || activeCredentialId);
+    await setActiveCredential(selectedCredentialId);
     status("Credencial selecionada.", "success");
   } catch (e) {
     status(e.message, "error");
@@ -544,7 +571,7 @@ $("use-credential").onclick = async () => {
 $("remove-credential").onclick = async () => {
   lock(true);
   try {
-    await removeCredential(editingId || activeCredentialId);
+    await removeCredential(selectedCredentialId);
   } catch (e) {
     status(e.message, "error");
   } finally {

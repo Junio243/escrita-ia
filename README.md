@@ -6,23 +6,23 @@
 
 *Revise ortografia, gramática, pontuação, tipografia, estilo e tom diretamente em qualquer campo de texto da web — combinando um motor local ultrarrápido com o poder do seu próprio modelo de IA (nuvem ou local).*
 
-[[https://img.shields.io/github/actions/workflow/status/Junio243/escrita-ia/ci.yml?style=for-the-badge&logo=githubactions&logoColor=white&label=CI%20%2F%20Testes]](https://github.com/Junio243/escrita-ia/actions/workflows/ci.yml)
-[https://img.shields.io/badge/Vers%C3%A3o-3.2.0-2563EB?style=for-the-badge&logo=semanticrelease&logoColor=white]
-[https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white]
-[https://img.shields.io/badge/Node.js-22%20LTS-339933?style=for-the-badge&logo=nodedotjs&logoColor=white]
-[https://img.shields.io/badge/Idiomas-34%20(36%20Variantes]-8B5CF6?style=for-the-badge)
-[https://img.shields.io/badge/Licen%C3%A7a-MIT-10B981?style=for-the-badge]
+[![CI](https://img.shields.io/github/actions/workflow/status/Junio243/escrita-ia/ci.yml?style=for-the-badge&logo=githubactions&logoColor=white&label=CI%20%2F%20Testes)](https://github.com/Junio243/escrita-ia/actions/workflows/ci.yml)
+[![Versão](https://img.shields.io/badge/Vers%C3%A3o-3.2.3-2563EB?style=for-the-badge&logo=semanticrelease&logoColor=white)](https://github.com/Junio243/escrita-ia/releases/tag/3.2.3)
+[![Chrome](https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](https://developer.chrome.com/docs/extensions/develop/mv3-intro)
+[![Node.js](https://img.shields.io/badge/Node.js-22%20LTS-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Idiomas](https://img.shields.io/badge/Idiomas-34%20%2836%20variantes%29-8B5CF6?style=for-the-badge)](#provedores-de-ia-suportados-cloud--local)
+[![Licença](https://img.shields.io/badge/Licen%C3%A7a-MIT-10B981?style=for-the-badge)](LICENSE)
 
 <br />
 
-[[https://img.shields.io/badge/%F0%9F%8C%90_Testar_Est%C3%BAdio_de_Escrita_(Demo]-111827?style=for-the-badge)](https://Junio243.github.io/escrita-ia/)
-[[https://img.shields.io/badge/%F0%9F%93%A6_Baixar_Extens%C3%A3o_(.ZIP]-2563EB?style=for-the-badge)](https://github.com/Junio243/escrita-ia/archive/refs/heads/main.zip)
-[[https://img.shields.io/badge/%F0%9F%93%96_Manual_(LEIA--ME]-374151?style=for-the-badge)](LEIA-ME.md)
-[[https://img.shields.io/badge/%E2%9C%85_Valida%C3%A7%C3%A3o_&_Testes-059669?style=for-the-badge]](VALIDACAO.md)
+[![Testar Estúdio de Escrita](https://img.shields.io/badge/%F0%9F%8C%90_Testar_Est%C3%BAdio_de_Escrita-111827?style=for-the-badge)](https://Junio243.github.io/escrita-ia/)
+[![Baixar Extensão](https://img.shields.io/badge/%F0%9F%93%A6_Baixar_Extens%C3%A3o_%28.ZIP%29-2563EB?style=for-the-badge)](https://github.com/Junio243/escrita-ia/archive/refs/heads/main.zip)
+[![Manual](https://img.shields.io/badge/%F0%9F%93%96_Manual_%28LEIA--ME%29-374151?style=for-the-badge)](LEIA-ME.md)
+[![Validação e Testes](https://img.shields.io/badge/%E2%9C%85_Valida%C3%A7%C3%A3o_&_Testes-059669?style=for-the-badge)](VALIDACAO.md)
 
 <br />
 
-[docs/screenshots/extension.png]
+![Painel da extensão Escrita IA](docs/screenshots/extension.png)
 
 *Grifos discretos durante a digitação, sugestões contextuais sob demanda e zero alterações aplicadas sem o seu clique.*
 
@@ -33,7 +33,7 @@
 ## 🧭 Índice de Navegação
 
 1. [Sobre o Projeto & Arquitetura Híbrida](#-sobre-o-projeto--arquitetura-híbrida)
-2. [Novidades da Geração 3.x (v3.0 a v3.2.0)](#-novidades-da-geração-3x-v30-a-v320)
+2. [Novidades da Geração 3.x (v3.0 a v3.2.3)](#-novidades-da-geração-3x-v30-a-v323)
 3. [Galeria Visual da Extensão & Estúdio Web](#-galeria-visual-da-extensão--estúdio-web)
 4. [Engenharia de Revisão & Os 9 Modos de Reescrita](#-engenharia-de-revisão--os-9-modos-de-reescrita)
 5. [Ecossistema de Compatibilidade (Sites & Editores)](#-ecossistema-de-compatibilidade-sites--editores)
@@ -57,7 +57,7 @@ A **Escrita IA** foi projetada para resolver um problema comum das ferramentas d
 - Aplicação de cada sugestão com um clique, botão **Copiar** texto, **Limpar espaços** e opção de desfazer.
 - Atalho `Alt+Shift+E` (ou botão direto no popup) para abrir/fechar o painel no campo ativo.
 - Estatísticas da sessão (análises, ocorrências, sugestões aplicadas) e controle rápido do **Modo Exigente** no popup.
-- Revisão local sem IA para palavras e espaços duplicados e espaço antes de pontuação; com **Português · Brasil** ou **Português · Portugal** selecionado, também verifica acentuação ampliada, grafia (`concerteza`, `derepente`, `porisso`, `apartir`), verbos impessoais (`fazer`/`haver`), crase e pleonasmos.
+- Revisão local sem IA para palavras e espaços duplicados e espaço antes de pontuação; com **Português · Brasil** ou **Português · Portugal** selecionado, também verifica acentuação ampliada, grafia (`concerteza`, `derepente`, `porisso`, `apartir`), verbos impessoais (`fazer`/`haver`), concordância verbal comum, crase e pleonasmos. No modo automático, textos claramente em português também usam essas regras locais.
 - Banco local de correções offline: abreviaturas e formas informais (`vc`, `vcs`, `tmb`, `pq`, `qdo`, `pra`, `pro`, `hj`, `amn`, `msg`, `obrigad`, `blz`, `sds`, `bjs`, `tdb`, `valeu`, `flw`) são sugeridas na revisão local sem chamada à IA.
 - Gerenciador de chaves e uso: salve vários provedores com modelo, formato e limite diário; use uma chave manual ou ative a rotação automática para escolher a chave pronta e menos usada no dia. As opções e o popup mostram requisições, caracteres e erros para você não gastar o saldo de uma só vez.
 - Dicionário pessoal separado por idioma, com busca em tempo real, contador de termos e importação/exportação em JSON.
@@ -78,16 +78,20 @@ A **Escrita IA** foi projetada para resolver um problema comum das ferramentas d
 
 ---
 
-## 🚀 Novidades da Geração 3.x (v3.0 a v3.2.0)
+## 🚀 Novidades da Geração 3.x (v3.0 a v3.2.3)
 
-### Destaques da Versão `3.2.0` (Atual)
-- 🎨 **Identidade Visual Renovada:** Novo `logo.svg` vetorial e ícones PNG renderizados em alta definição.
-- 🔄 **9 Estilos de Reescrita:** Expansão completa dos modos de transformação textual para até **6.000 caracteres** (seleção ou campo inteiro).
-- 📊 **Métricas Avançadas (`textStats`):** Contagem em tempo real de palavras, caracteres, frases, tempo estimado de leitura e índice de legibilidade.
-- 🧹 **Higienização Instantânea (`cleanText`):** Limpeza rápida de espaços excedentes e ruídos de formatação com suporte a desfazer.
-- 🇧🇷 **Regras Nativas Expandidas (PT-BR & PT-PT):** Detecção local de acentuação ampliada, erros clássicos de grafia (`concerteza`, `derepente`, `porisso`, `apartir`), regência de verbos impessoais (`fazer`/`haver`), uso de crase e pleonasmos viciosos.
-- 📖 **Dicionário Pessoal Avançado:** Separado por idioma, com busca em tempo real, contador de vocábulos e importação/exportação em formato `JSON`.
-- 🛡️ **Gestão de Domínios & Popup Ágil:** Controle de sites pausados diretamente nas Configurações, atalhos rápidos no Popup e chaveamento imediato do **Modo Exigente**.
+### Destaques da Versão `3.2.3` (Atual)
+- 🛠️ **Correções de Auditoria:** loop de reanálise eliminado, cache de respostas preservado, rotação automática penaliza chaves com erro recente e o painel exige interação real do usuário.
+- 🔑 **Gerenciador de Chaves e Uso:** cadastro de vários provedores, seleção manual, rotação automática pela chave menos usada no dia e limite diário por credencial.
+- 📊 **Contadores de API:** requisições, caracteres e erros exibidos no popup e nas configurações para evitar gastar o saldo de uma só vez.
+- 🧠 **Gramática Offline Aprimorada:** concordância verbal comum, crase de destino, detecção automática de português e correções locais sem necessidade de API.
+- 🛡️ **Segurança Reforçada:** proteção ampliada para campos sensíveis e validação de eventos nos fluxos que consomem IA.
+- 🎨 **Identidade Visual Renovada:** novo `logo.svg` vetorial e ícones PNG renderizados em alta definição.
+- 🔄 **9 Estilos de Reescrita:** expansão completa dos modos de transformação textual para até **6.000 caracteres** (seleção ou campo inteiro).
+- 📊 **Métricas Avançadas (`textStats`):** contagem em tempo real de palavras, caracteres, frases, tempo estimado de leitura e índice de legibilidade.
+- 🧹 **Higienização Instantânea (`cleanText`):** limpeza rápida de espaços excedentes e ruídos de formatação com suporte a desfazer.
+- 🇧🇷 **Regras Nativas Expandidas (PT-BR & PT-PT):** detecção local de acentuação ampliada, erros clássicos de grafia, verbos impessoais, concordância verbal comum, uso de crase e pleonasmos.
+- 📖 **Dicionário Pessoal Avançado:** separado por idioma, com busca em tempo real, contador de vocábulos e importação/exportação em formato `JSON`.
 
 <details>
 <summary><strong>📌 Ver melhorias consolidadas das versões 3.0.0 e 3.0.1 (Clique para expandir)</strong></summary>
@@ -391,6 +395,6 @@ As regras de retenção, privacidade e cobrança dependem do provedor escolhido.
 
 ## Versão
 
-Versão atual: **3.2.2**.
+Versão atual: **3.2.3**.
 
 Consulte [LEIA-ME.md](LEIA-ME.md) para instruções completas e [VALIDACAO.md](VALIDACAO.md) para os resultados de validação.

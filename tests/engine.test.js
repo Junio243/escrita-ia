@@ -49,10 +49,14 @@ test('Portuguese local review catches accents and selected grammar rules',()=>{
   assert.deepEqual(grammar[0].replacements,['Nós vamos']);
 });
 
-test('Portuguese-only local rules do not leak into other or automatic languages',()=>{
+test('revisão automática detecta português claro e evita outros idiomas',()=>{
   assert.equal(E.allLocalIssues('Nós vai amanhã.','en-US').length,0);
-  assert.equal(E.allLocalIssues('Nós vai amanhã.','auto').length,0);
+  const autoPortuguese=E.allLocalIssues('Nós vai amanhã. Amanhã eu vou.','auto');
+  assert.equal(autoPortuguese.filter(i=>i.rule==='Concordância verbal').length,1);
+  const autoAccent=E.allLocalIssues('A minha familia e eu estudamos.','auto');
+  assert.equal(autoAccent.filter(i=>i.rule==='Acentuação').length,1);
   assert.equal(E.allLocalIssues('teste teste','auto').length,1);
+  assert.equal(E.allLocalIssues('the cat and the dog','auto').length,0);
 });
 
 test('metrics and chunks handle empty input',()=>{
@@ -128,4 +132,55 @@ test('allLocalIssues inclui banco local',()=>{
 test('banco local não vaza para outros idiomas',()=>{
   assert.equal(E.dbIssues('vc tmb', 'en-US').length,0);
   assert.equal(E.allLocalIssues('vc tmb', 'auto').length,0);
+});
+
+test('gramática local offline cobre concordância verbal comum',()=>{
+  const issues=E.allLocalIssues('Nós vai amanhã. Eu vamos sair. A gente vamos conversar. Eles tem razão. Ele estão bem.','pt-BR');
+  const found=Object.fromEntries(issues.filter(i=>i.rule==='Concordância verbal').map(i=>[i.quote,i.replacements[0]]));
+  assert.equal(found['Nós vai'],'Nós vamos');
+  assert.equal(found['Eu vamos'],'Eu vou');
+  assert.equal(found['A gente vamos'],'A gente vai');
+  assert.equal(found['Eles tem'],'Eles têm');
+  assert.equal(found['Ele estão'],'Ele está');
+  assert.equal(issues.filter(i=>i.rule==='Concordância verbal').length,5);
+});
+
+test('crase local de destino comum funciona sem IA',()=>{
+  const issues=E.allLocalIssues('Vou a escola de manhã. Ela foi a igreja. Nós vamos a praia.','pt-BR');
+  const crase=issues.filter(i=>i.rule==='Crase');
+  assert.equal(crase.length,3);
+  assert.equal(crase[0].quote,'a escola');
+  assert.equal(crase[0].replacements[0],'à escola');
+});
+
+test('gramática local evita corrupção em construções válidas',()=>{
+  const compound=E.allLocalIssues('Você e eu vamos ao cinema.','pt-BR');
+  assert.equal(compound.filter(i=>i.rule==='Concordância verbal').length,0);
+  const quantified=E.allLocalIssues('Um de nós vai viajar amanhã.','pt-BR');
+  assert.equal(quantified.filter(i=>i.rule==='Concordância verbal').length,0);
+  const agent=E.allLocalIssues('O agente vai viajar.','pt-BR');
+  assert.equal(agent.filter(i=>i.rule==='Gramática').length,0);
+  const publico=E.allLocalIssues('Eu publico artigos semanais.','pt-BR');
+  assert.equal(publico.filter(i=>i.rule==='Acentuação').length,0);
+  const duration=E.allLocalIssues('Fazem três meses que não saio.','pt-BR');
+  const durationIssue=duration.find(i=>i.rule==='Concordância verbal');
+  assert.equal(durationIssue.replacements[0],'Faz três meses');
+});
+
+test('detecção automática reconhece português sem acentos',()=>{
+  const issues=E.allLocalIssues('Voce vai amanha?','auto');
+  assert(issues.some(i=>i.quote==='Voce'&&i.replacements[0]==='Você'));
+  const english=E.allLocalIssues('The amateur bomb squad was so proud.','auto');
+  assert.equal(english.filter(i=>i.rule==='Acentuação').length,0);
+});
+
+test('regras locais ignoram URLs e e-mails',()=>{
+  assert.equal(E.accentIssues('veja https://exemplo.com/ate/fim','pt-BR').length,0);
+  assert.equal(E.dbIssues('meu e-mail é vc.silva@exemplo.com','pt-BR').length,0);
+});
+
+test('acentuação funciona no fim da frase',()=>{
+  const issues=E.accentIssues('O trabalho foi facil.','pt-BR');
+  assert.equal(issues.length,1);
+  assert.equal(issues[0].replacements[0],'fácil');
 });

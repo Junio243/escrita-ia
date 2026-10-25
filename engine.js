@@ -74,11 +74,11 @@
     'familia':'família','familias':'famílias','materia':'matéria','materias':'matérias','noticia':'notícia','noticias':'notícias',
     'informacao':'informação','informacoes':'informações','solucao':'solução','solucoes':'soluções','resolucao':'resolução','resolucoes':'resoluções',
     'situacao':'situação','situacoes':'situações','acao':'ação','acoes':'ações','decisao':'decisão','decisoes':'decisões','reuniao':'reunião','reunioes':'reuniões',
-    'geracao':'geração','geracoes':'gerações','publico':'público','publica':'pública','publicos':'publicos'.replace('u','ú'),'publicas':'públicas',
+    'geracao':'geração','geracoes':'gerações',
     'historico':'histórico','historica':'histórica','obrigatorio':'obrigatório','obrigatoria':'obrigatória','maximo':'máximo','maxima':'máxima',
     'minimo':'mínimo','minima':'mínima','area':'área','areas':'áreas','saude':'saúde','saida':'saída','tambem':'também','ninguem':'ninguém','alguem':'alguém',
     'porem':'porém','parabens':'parabéns','seculo':'século','seculos':'séculos','decada':'década','decadas':'décadas','so':'só','ja':'já',
-    'sera':'será','serao':'serão','estao':'estão','ira':'irá','havera':'haverá','atras':'atrás','alem':'além','atraves':'através',
+    'sera':'será','serao':'serão','estao':'estão','havera':'haverá','atras':'atrás','alem':'além','atraves':'através',
     'entao':'então','irmao':'irmão','irmaos':'irmãos','coracao':'coração','coracoes':'corações','atencao':'atenção','intencao':'intenção','intencoes':'intenções',
     'funcao':'função','funcoes':'funções','opiniao':'opinião','opinioes':'opiniões','questao':'questão','questoes':'questões',
     'versao':'versão','versoes':'versões','revisao':'revisão','revisoes':'revisões','discussao':'discussão','discussoes':'discussões',
@@ -104,6 +104,13 @@
     'tdb':'tudo bem','valeu':'obrigado','flw':'falou'
   }));
   const CORRECTION_CATEGORY={vc:'spelling',vcs:'spelling',tmb:'spelling',pq:'spelling',qdo:'spelling',pra:'spelling',pro:'spelling',hj:'spelling',amn:'spelling',msg:'spelling',obrigad:'spelling',blz:'style',sds:'style',bjs:'style',tdb:'style',valeu:'style',flw:'style'};
+  function insideIdentifier(text,start,end){
+    const before=text[start-1],after=text[end];
+    if(before&&/[/@.]/.test(before))return true;
+    if(after==='/'||after==='@')return true;
+    if(after==='.'&&/\p{L}/u.test(text[end+1]??''))return true;
+    return false;
+  }
   function accentIssues(text,locale='pt-BR'){
     if(locale!=='pt-BR'&&locale!=='pt-PT')return[];
     const out=[];const re=/\p{L}+/gu;let m;
@@ -111,9 +118,7 @@
       const word=m[0],start=m.index,end=start+word.length;
       const fix=ACCENTS.get(norm(word));
       if(!fix||norm(fix)===norm(word))continue;
-      const before=text[start-1],after=text[end];
-      if(before&&/[/@.]/.test(before))continue;
-      if(after&&/[.@]/.test(after))continue;
+      if(insideIdentifier(text,start,end))continue;
       const fixed=/^\p{Lu}/u.test(word)?fix[0].toLocaleUpperCase('pt-BR')+fix.slice(1):fix;
       out.push({start,end,quote:word,category:'spelling',rule:'Acentuação',explanation:`"${fixed}" leva acento; sem ele a palavra fica errada ou muda de sentido.`,replacements:[fixed],source:'local'});
     }
@@ -123,7 +128,6 @@
     const out=[];
     const W='[^\\p{L}\\p{N}_]';
     const rules=[
-      [new RegExp(`(?:^|${W})([Nn]ós[ ]+vai)(?=${W}|$)`,'gud'),'Concordância verbal','O verbo concorda com "nós": vamos.',['Nós vamos']],
       [new RegExp(`(?:^|${W})([Aa]s[ ]+menina)(?=${W}|$)`,'gud'),'Concordância nominal','Artigo e substantivo devem concordar no plural: "as meninas".',['as meninas']],
       [new RegExp(`(?:^|${W})([Aa]s[ ]+menino)(?=${W}|$)`,'gud'),'Concordância nominal','Artigo e substantivo devem concordar: "os meninos" ou "as meninas".',['os meninos']],
       [new RegExp(`(?:^|${W})([Oo]s[ ]+menina)(?=${W}|$)`,'gud'),'Concordância nominal','Artigo e substantivo devem concordar: "as meninas".',['as meninas']],
@@ -137,12 +141,11 @@
       [new RegExp(`(?:^|${W})([Ss]air[ ]+para[ ]+fora)(?=${W}|$)`,'gud'),'Estilo','Redundância: "sair" já indica movimento para fora.',['sair'],'style'],
       [new RegExp(`(?:^|${W})([Aa]diar[ ]+para[ ]+depois)(?=${W}|$)`,'gud'),'Estilo','Redundância: "adiar" já significa deixar para depois.',['adiar'],'style'],
       [new RegExp(`(?:^|${W})([Cc]erteza[ ]+absoluta)(?=${W}|$)`,'gud'),'Estilo','Redundância: quem tem certeza já está seguro. Prefira "certeza".',['certeza'],'style'],
-      [new RegExp(`(?:^|${W})([Hh]a[ ]+muitos[ ]+anos)(?=${W}|$)`,'gud'),'Gramática','Tempo passado pede "há" (verbo haver): "Há muitos anos".',['Há muitos anos']],
-      [new RegExp(`(?:^|${W})([Hh]a[ ]+dois[ ]+dias)(?=${W}|$)`,'gud'),'Gramática','Tempo passado pede "há" (verbo haver): "Há dois dias".',['Há dois dias']],
+      [new RegExp(`(?:^|${W})([Hh]a[ ]+muitos[ ]+anos)(?=${W}|$)`,'gud'),'Gramática','Tempo passado pede "há" (verbo haver): "Há muitos anos".',['há muitos anos']],
+      [new RegExp(`(?:^|${W})([Hh]a[ ]+dois[ ]+dias)(?=${W}|$)`,'gud'),'Gramática','Tempo passado pede "há" (verbo haver): "Há dois dias".',['há dois dias']],
       [new RegExp(`(?:^|${W})([Hh]á[ ]+muitos[ ]+anos[ ]+atrás)(?=${W}|$)`,'gud'),'Estilo','Evite usar "há" e "atrás" juntos para tempo passado.',['há muitos anos','muitos anos atrás'],'style'],
-      [new RegExp(`(?:^|${W})([Ff]azem[ ]+(?:dois|três|quatro|cinco|muitos|alguns|vários)[ ]+(?:anos|meses|dias))(?=${W}|$)`,'gud'),'Concordância verbal','O verbo "fazer" indicando tempo decorrido é impessoal (singular).',['Faz dois anos']],
       [new RegExp(`(?:^|${W})([Hh]aviam[ ]+muitas[ ]+pessoas)(?=${W}|$)`,'gud'),'Concordância verbal','O verbo "haver" no sentido de existir é impessoal: "havia muitas pessoas".',['havia muitas pessoas']],
-      [new RegExp(`(?:^|${W})([Aa]gente[ ]+vai)(?=${W}|$)`,'gud'),'Gramática','A forma correta do pronome é "a gente": "A gente vai".',['A gente vai']],
+      [new RegExp(`(?:^|[.!?;:]\\s*)([Aa]gente[ ]+vai)(?=${W}|$)`,'gud'),'Gramática','A forma correta do pronome é "a gente": "A gente vai".',['a gente vai']],
       [new RegExp(`(?:^|${W})([Cc]oncerteza)(?=${W}|$)`,'gud'),'Grafia','Escreve-se separado: "com certeza".',['com certeza'],'spelling'],
       [new RegExp(`(?:^|${W})([Dd]erepente)(?=${W}|$)`,'gud'),'Grafia','Escreve-se separado: "de repente".',['de repente'],'spelling'],
       [new RegExp(`(?:^|${W})([Pp]orisso)(?=${W}|$)`,'gud'),'Grafia','Escreve-se separado: "por isso".',['por isso'],'spelling'],
@@ -158,6 +161,40 @@
         const reps=replacements.map(r=>cap?r[0].toLocaleUpperCase('pt-BR')+r.slice(1):r);
         out.push({start,end,quote,category:category||'grammar',rule,explanation,replacements:reps,source:'local'});
       }
+    }
+    for(const m of text.matchAll(new RegExp(`(?:^|${W})([Ff]azem[ ]+(?:dois|três|quatro|cinco|muitos|alguns|vários)[ ]+(?:anos|meses|dias))(?=${W}|$)`,'gud'))){
+      const [start,end]=m.indices[1],quote=text.slice(start,end),
+        replacement=quote.replace(/^fazem/i,match=>match[0]==='F'?'Faz':'faz');
+      out.push({start,end,quote,category:'grammar',rule:'Concordância verbal',explanation:'O verbo "fazer" indicando tempo decorrido é impessoal (singular).',replacements:[replacement],source:'local'});
+    }
+    const subjectVerbFixes=[
+      [['a gente','você','ele','ela'],{vamos:'vai',fazemos:'faz',podemos:'pode',queremos:'quer',ficamos:'fica',temos:'tem',somos:'é',estamos:'está',vão:'vai',são:'é',estão:'está',foram:'foi'}],
+      [['eu'],{vamos:'vou',fazemos:'faço',podemos:'posso',queremos:'quero',ficamos:'fico',temos:'tenho',somos:'sou',estamos:'estou',vão:'vou',são:'sou',estão:'estou',foram:'fui'}],
+      [['nós'],{vai:'vamos',faz:'fazemos',pode:'podemos',quer:'queremos',fica:'ficamos',tem:'temos',é:'somos',está:'estamos',foi:'fomos',vem:'vimos',gosta:'gostamos',chegou:'chegamos'}],
+      [['vocês','eles','elas'],{vai:'vão',faz:'fazem',pode:'podem',quer:'querem',fica:'ficam',tem:'têm',é:'são',está:'estão',foi:'foram',vem:'vêm',gosta:'gostam',chegou:'chegaram'}],
+    ];
+    for(const [subjects,fixes] of subjectVerbFixes){
+      const subjectPattern=subjects.map(subject=>`${subject[0].toLocaleUpperCase('pt-BR')}${subject.slice(1)}|${subject}`).join('|'),
+        verbPattern=Object.keys(fixes).join('|');
+      for(const m of text.matchAll(new RegExp(`(?:^|${W})(${subjectPattern})([ ]+)(${verbPattern})(?=${W}|$)`,'gud'))){
+        const prefix=text.slice(Math.max(0,m.indices[1][0]-40),m.indices[1][0]);
+        if(/(?:^|\s)(?:e|nem|ou)\s+$/i.test(prefix))continue;
+        if(/(?:^|\s)(?:um|uma|algum|alguma|nenhum|nenhuma|qualquer|cada|maioria|parte|menos|mais)\s+de\s+$/i.test(prefix))continue;
+        const quote=text.slice(m.indices[1][0],m.indices[3][1]),
+          replacement=m[1]+m[2]+fixes[m[3]],
+          cap=/^\p{Lu}/u.test(quote),
+          fixed=cap?replacement[0].toLocaleUpperCase('pt-BR')+replacement.slice(1):replacement;
+        out.push({start:m.indices[1][0],end:m.indices[3][1],quote,category:'grammar',rule:'Concordância verbal',explanation:`"${m[1]}" pede "${fixes[m[3]]}".`,replacements:[fixed],source:'local'});
+      }
+    }
+    const craseVerbs=['[Vv]ou','[Vv]ai','[Vv]amos','[Vv]á','[Ii]r','[Ff]ui','[Ff]oi','[Ff]omos','[Ff]oram','[Vv]oltou','[Vv]oltei','[Cc]heguei','[Cc]hegou','[Cc]hegaram'],
+      craseTargets=['praia','escola','igreja','reunião','festa','farmácia','padaria','academia','universidade','feira','cidade'];
+    for(const m of text.matchAll(new RegExp(`(?:^|${W})((?:${craseVerbs.join('|')})(?:${W})([Aa][ ]+(?:${craseTargets.join('|')})))(?=${W}|$)`,'gud'))){
+      const [start,end]=m.indices[2],target=text.slice(start,end),
+        rep='à'+target.slice(1),
+        cap=/^\p{Lu}/u.test(target),
+        replacement=cap?rep[0].toLocaleUpperCase('pt-BR')+rep.slice(1):rep;
+      out.push({start,end,quote:target,category:'grammar',rule:'Crase',explanation:`Antes de "${target.slice(2)}", a preposição "a" vira crase: "${replacement}".`,replacements:[replacement],source:'local'});
     }
     // Crase: "a aquela / a aquele / a aquilo" sem verbo antes vira "àquela / àquele / àquilo"
     for(const [target,fixed] of [['aquela','àquela'],['aquelas','àquelas'],['aquele','àquele'],['aqueles','àqueles'],['aquilo','àquilo']]){
@@ -177,9 +214,7 @@
       const word=m[0],start=m.index,end=start+word.length;
       const fix=CORRECTIONS_DB.get(norm(word));
       if(!fix||norm(fix)===norm(word)||ACCENTS.has(norm(word)))continue;
-      const before=text[start-1],after=text[end];
-      if(before&&/@/.test(before))continue;
-      if(after&&/@/.test(after))continue;
+      if(insideIdentifier(text,start,end))continue;
       const fixed=/^\p{Lu}/u.test(word)?fix[0].toLocaleUpperCase('pt-BR')+fix.slice(1):fix;
       out.push({start,end,quote:word,category:CORRECTION_CATEGORY[norm(word)]||'spelling',rule:'Correção local',explanation:`"${word}" é uma forma informal ou abreviada; use "${fixed}".`,replacements:[fixed],source:'local'});
     }
@@ -189,15 +224,29 @@
     const spacing=[...text.matchAll(/(?<=\S)[ ]{2,}(?=\S)/gu)].map(m=>({start:m.index,end:m.index+m[0].length,quote:m[0],category:'typography',rule:'Espaçamento duplicado',explanation:'Use um único espaço entre as palavras. Ignore se o espaçamento for intencional.',replacements:[' '],source:'local'}));
     const punctSpacing=[...text.matchAll(/(?<=\p{L})[ ]+([,;:])(?=\s|$)/gu)].map(m=>({start:m.index,end:m.index+m[0].length,quote:m[0],category:'punctuation',rule:'Espaço antes da pontuação',explanation:`Não se usa espaço antes de "${m[1]}". Coloque o sinal logo após a palavra.`,replacements:[m[1]],source:'local'}));
     const repeated=[];
+    const allowedRepeats=new Set(['that','had']);
     for(const m of text.matchAll(/(^|[^\p{L}\p{N}_])(\p{L}{2,})(\s+)(\2)(?=[^\p{L}\p{N}_]|$)/giu)){
+      if(allowedRepeats.has(norm(m[2])))continue;
       const start=m.index+m[1].length,quote=m[2]+m[3]+m[4];
       repeated.push({start,end:start+quote.length,quote,category:'grammar',rule:'Palavra duplicada',explanation:`"${m[2]}" aparece duas vezes seguidas. Remova a repetição, salvo ênfase intencional.`,replacements:[m[2]],source:'local'});
     }
     return [...spacing,...punctSpacing,...repeated];
   }
+  function looksPortuguese(text){
+    const low=norm(String(text||''));
+    if(!low)return false;
+    const markers=['você','voce','vocês','vocs','nós','nos','a gente','gente','não','nao','está','esta','estão','estao','também','tambem','obrigado','obrigada','amanhã','amanha','hoje','portanto','então','entao','já','ja','até','ate','são','sao','mensagem','minha','meu','meus','minhas','eu','porque','assim','muito','tudo','falar','bom','bem'];
+    const pattern=new RegExp(`(?:^|[^\\p{L}\\p{N}_])(?:${markers.join('|')})(?=[^\\p{L}\\p{N}_]|$)`,'giu');
+    let hits=0;
+    while(hits<2&&pattern.exec(low))hits++;
+    return hits>=2;
+  }
   function allLocalIssues(text,locale='pt-BR'){
-    const portuguese=locale==='pt-BR'||locale==='pt-PT';
-    return [...localIssues(text),...accentIssues(text,locale),...dbIssues(text,locale),...(portuguese?ptIssues(text):[])];
+    const selectedPortuguese=locale==='pt-BR'||locale==='pt-PT',
+      autoPortuguese=locale==='auto'&&looksPortuguese(text),
+      portuguese=selectedPortuguese||autoPortuguese,
+      ptLocale=locale==='pt-PT'?'pt-PT':'pt-BR';
+    return [...localIssues(text),...accentIssues(text,portuguese?ptLocale:locale),...(portuguese?[...dbIssues(text,ptLocale),...ptIssues(text)]:[])];
   }
   function merge(issues,text,dictionary={},locale='pt-BR') {
     const seen=new Set();

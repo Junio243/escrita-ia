@@ -16,7 +16,7 @@
   function safe(el) {
     if (!el || (!plain(el) && !el.isContentEditable) || el.disabled || el.readOnly || el.getAttribute('aria-readonly') === 'true') return false;
     const metadata = [el.name,el.id,el.getAttribute('autocomplete'),el.getAttribute('aria-label')].join(' ');
-    return !/(password|senha|token|secret|cpf|cart[aã]o|credit.?card|cc-|one-time-code|username)/i.test(metadata) && !el.closest('[data-escrita-ignore]');
+    return !/(password|senha|token|secret|cpf|cnpj|rg\b|cart[aã]o|credit.?card|cc-|ccnum|card(?:number|num|no)|cvv|cvc|csc|security.?code|otp|one-time-code|2fa|mfa|pin\b|iban|username|user.?name|login|e?mail|expiry|validade|passport|social.?security)/i.test(metadata) && !el.closest('[data-escrita-ignore]');
   }
   // Project editable text onto DOM positions, including paragraph and BR boundaries.
   function snapshot(el) {

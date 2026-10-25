@@ -10,6 +10,7 @@
     writing = false,
     composing = false,
     hasKey = false,
+    blockedReason = "",
     enabled = true,
     connected = false,
     selection = null,
@@ -438,7 +439,10 @@
       U.icon("wand"),
       n("span", { text: "Gerar alternativas" }),
     ]);
-    button.onclick = () => rewrite(select.value, button);
+    button.onclick = (event) => {
+      if (!event.isTrusted) return;
+      rewrite(select.value, button);
+    };
     U.rewrite.append(
       label,
       quote,
@@ -526,7 +530,8 @@
     }
     if (!hasKey) {
       status(
-        "Configure URL, modelo e credencial do provedor. A revisão local continua ativa.",
+        blockedReason ||
+          "Configure URL, modelo e credencial do provedor. A revisão local continua ativa.",
         "missingKey",
       );
       render();
@@ -570,7 +575,9 @@
       resize.disconnect();
       resize.observe(el);
       status(
-        hasKey ? "Pronto para revisar." : "Configure seu provedor de IA.",
+        hasKey
+          ? "Pronto para revisar."
+          : blockedReason || "Configure seu provedor de IA.",
         hasKey ? "ready" : "missingKey",
       );
       render();
@@ -588,7 +595,6 @@
       prefs.dictionary,
       prefs.language === "auto" ? "pt-BR" : prefs.language,
     );
-    clearIgnored();
     status("Aguardando sua pausa…", "ready");
     render();
     schedule();
@@ -606,6 +612,7 @@
             }
           : null;
       hasKey = r.hasKey;
+      blockedReason = r.blockedReason || "";
       enabled = r.siteEnabled && prefs.assistantEnabled;
       connected = true;
       U.ui.classList.toggle(
@@ -625,7 +632,9 @@
       const el = F.focused();
       if (F.safe(el)) activate(el);
       status(
-        hasKey ? "Pronto para revisar." : "Configure seu provedor de IA.",
+        hasKey
+          ? "Pronto para revisar."
+          : blockedReason || "Configure seu provedor de IA.",
         hasKey ? "ready" : "missingKey",
       );
       render();
@@ -643,7 +652,8 @@
   }
   const resize = new ResizeObserver(layout);
   new ResizeObserver(layout).observe(U.panel);
-  U.badge.onclick = () => {
+  U.badge.onclick = (event) => {
+    if (!event.isTrusted) return;
     if (suppressBadgeClick) {
       suppressBadgeClick = false;
       return;
@@ -687,7 +697,7 @@
       if (!moved) return;
       suppressBadgeClick = true;
       setTimeout(() => { suppressBadgeClick = false; }, 0);
-      chrome.storage.local.set({ badgePosition }).catch(() => {});
+      send({ type: "setBadgePosition", position: badgePosition }).catch(() => {});
     };
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", end);
@@ -714,7 +724,8 @@
     tab("rewrite");
     selectionUI();
   };
-  U.whole.onclick = () => {
+  U.whole.onclick = (event) => {
+    if (!event.isTrusted) return;
     selectionUI(true);
   };
   if (U.cleanBtn) {
@@ -794,7 +805,8 @@
     },
     true,
   );
-  U.retry.onclick = () => {
+  U.retry.onclick = (event) => {
+    if (!event.isTrusted) return;
     refresh();
   };
   U.undo.onclick = () => {

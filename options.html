@@ -11,7 +11,7 @@
       <header>
         <div class="brand-icon" aria-hidden="true">e<span>✦</span></div>
         <div>
-          <div class="eyebrow">ESCRITA IA · ESTÚDIO 3.2</div>
+          <div class="eyebrow">ESCRITA IA · ESTÚDIO 3.2.3</div>
           <h1>Um assistente do seu jeito.</h1>
         </div>
       </header>
@@ -21,9 +21,9 @@
       <nav class="settings-nav" aria-label="Seções de configurações">
         <a href="#connection">01 · Conexão com IA</a
         ><a href="#preferences">02 · Experiência de revisão</a
-        ><a href="#dictionary">03 · Dicionário pessoal</a
-        ><a href="#sites">04 · Sites gerenciados</a
-        ><a href="#credentials">05 · Provedores e uso</a
+        ><a href="#credentials">03 · Provedores e uso</a
+        ><a href="#dictionary">04 · Dicionário pessoal</a
+        ><a href="#sites">05 · Sites gerenciados</a
         ><a href="#privacy">06 · Privacidade</a>
         <div class="nav-note">
           Abra o painel no campo ativo com
@@ -97,7 +97,7 @@
                 Mostrar
               </button>
             </div>
-            <small id="credential-state">Verificando configuração…</small
+            <small id="credential-state" role="status" aria-live="polite">Verificando configuração…</small
             ><label class="check"
               ><input id="remember" type="checkbox" checked />Lembrar chave
               neste navegador</label
@@ -155,7 +155,7 @@
         </form>
         <div id="status" role="status" aria-live="polite"></div>
         <section id="credentials">
-          <div class="section-label">05 / PROVEDORES E USO</div>
+          <div class="section-label">03 / PROVEDORES E USO</div>
           <div class="section-head-row">
             <h2>Salve e acompanhe suas chaves.</h2>
             <span class="badge-pill" id="credential-count">0 chaves</span>
@@ -189,7 +189,7 @@
           <div id="credential-list"></div>
         </section>
         <section id="dictionary">
-          <div class="section-label">03 / DICIONÁRIO</div>
+          <div class="section-label">04 / DICIONÁRIO</div>
           <div class="section-head-row">
             <h2>Palavras que fazem parte de você.</h2>
             <span class="badge-pill" id="dict-count">0 termos</span>
@@ -239,7 +239,7 @@
           </div>
         </section>
         <section id="privacy">
-          <div class="section-label">05 / TRANSPARÊNCIA</div>
+          <div class="section-label">06 / TRANSPARÊNCIA</div>
           <h2>Sua escrita merece cuidado.</h2>
           <p class="section-description">
             O campo ativo é enviado ao provedor configurado após uma pausa.

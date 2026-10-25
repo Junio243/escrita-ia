@@ -145,13 +145,29 @@ function clean(text) {
     b = raw.lastIndexOf("}");
   if (a >= 0 && b > a) {
     const value = raw.slice(a, b + 1);
-    JSON.parse(value);
-    return value;
+    try {
+      JSON.parse(value);
+      return value;
+    } catch {}
   }
   return raw;
 }
 export function parseProviderResponse(data, operation, transport) {
-  if (transport === "responses") return parseResponse(data, operation);
+  if (transport === "responses") {
+    const output = (data?.output || []).map((item) =>
+      item?.type === "message"
+        ? {
+            ...item,
+            content: (item.content || []).map((part) =>
+              part?.type === "output_text"
+                ? { ...part, text: clean(part.text) }
+                : part,
+            ),
+          }
+        : item,
+    );
+    return parseResponse({ ...data, output }, operation);
+  }
   const message = data?.choices?.[0]?.message;
   if (!message)
     throw Error("O provedor não retornou Chat Completions compatível.");

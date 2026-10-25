@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 let listener,
   installed,
   commandListener,
+  storageListener,
   httpStatus = 200,
   latency = 0,
   inFlight = 0,
@@ -13,6 +14,10 @@ let listener,
   lastRequest,
   calls = 0;
 const sentMessages = [];
+const localDay = () => {
+  const date = new Date();
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+};
 const local = {
     apiKey: "sk-test",
     model: "test",
@@ -60,6 +65,10 @@ globalThis.chrome = {
       },
       async set(p) {
         Object.assign(local, p);
+        storageListener?.(
+          Object.fromEntries(Object.keys(p).map((key) => [key, {}])),
+          "local",
+        );
       },
     },
     session: {
@@ -67,7 +76,11 @@ globalThis.chrome = {
         return get(session, a);
       },
     },
-    onChanged: { addListener() {} },
+    onChanged: {
+      addListener(fn) {
+        storageListener = fn;
+      },
+    },
   },
   scripting: {
     async getRegisteredContentScripts() {
@@ -408,7 +421,7 @@ test("Google routes legacy Responses settings to chat and preserves model errors
 test("gerenciador salva credenciais, escolhe a ativa e oculta chaves", async () => {
   const backup = { ...local };
   try {
-    const day = new Date().toISOString().slice(0, 10);
+    const day = localDay();
     Object.assign(local, {
       providerUrl: "https://api.openai.com/v1",
       providerFormat: "chat",
@@ -492,7 +505,7 @@ test("gerenciador salva credenciais, escolhe a ativa e oculta chaves", async () 
 test("modo automático escolhe a chave menos usada no dia", async () => {
   const backup = { ...local };
   try {
-    const day = new Date().toISOString().slice(0, 10);
+    const day = localDay();
     Object.assign(local, {
       providerUrl: "https://api.openai.com/v1",
       providerFormat: "chat",
@@ -568,7 +581,7 @@ test("modo automático escolhe a chave menos usada no dia", async () => {
 test("limite diário bloqueia a chave antes de gastar a API", async () => {
   const backup = { ...local };
   try {
-    const day = new Date().toISOString().slice(0, 10);
+    const day = localDay();
     Object.assign(local, {
       providerUrl: "https://provider-limite.example/v1",
       providerFormat: "chat",

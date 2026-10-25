@@ -144,7 +144,7 @@ label {
   font-weight: 650;
   margin: 15px 0 7px;
 }
-input:not([type="checkbox"]),
+input:not([type="checkbox"]):not([type="radio"]),
 select,
 textarea {
   width: 100%;
@@ -169,11 +169,14 @@ textarea {
   font-size: 12px;
   font-weight: 500;
 }
-input[type="checkbox"] {
-  accent-color: #2c60d7;
+input[type="checkbox"],
+input[type="radio"] {
   width: 18px;
   height: 18px;
   flex-shrink: 0;
+}
+input[type="radio"] {
+  accent-color: #2c60d7;
 }
 small {
   color: var(--muted);
@@ -236,8 +239,8 @@ a {
 }
 .connection-steps { font-size: 12px; color: var(--muted); line-height: 1.6; }
 .connection-steps[data-state="loading"] { color: var(--accent); }
-.connection-steps[data-state="success"] { color: #1f8a52; }
-.connection-steps[data-state="error"] { color: #b94736; }
+.connection-steps[data-state="success"] { color: #157347; }
+.connection-steps[data-state="error"] { color: #b3261e; }
 #status[data-state="loading"]::before {
   content: "";
   display: inline-block;
@@ -251,10 +254,18 @@ a {
   animation: options-spin 0.8s linear infinite;
 }
 #status[data-state="success"] {
-  color: #1f8a52;
+  color: #157347;
 }
 #status[data-state="error"] {
-  color: #b94736;
+  color: #b3261e;
+}
+.dark #status[data-state="success"],
+.dark .connection-steps[data-state="success"] {
+  color: #7ee0a3;
+}
+.dark #status[data-state="error"],
+.dark .connection-steps[data-state="error"] {
+  color: #ffb4ab;
 }
 @keyframes options-spin {
   to {
@@ -567,9 +578,6 @@ summary {
 .switch-row input[type="checkbox"]:disabled {
   opacity: 0.4;
   cursor: default;
-}
-.save-bar {
-  position: static;
 }
 @media (prefers-reduced-motion: reduce) {
   * {

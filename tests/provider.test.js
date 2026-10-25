@@ -160,3 +160,31 @@ test("parses Chat Completions text, content arrays and fenced JSON", () => {
     parseProviderResponse({ choices: [] }, "analyze", "chat"),
   );
 });
+
+test("parses Responses fenced JSON", () => {
+  const value = { language: "pt-BR", issues: [] },
+    data = {
+      status: "completed",
+      output: [
+        {
+          type: "message",
+          content: [
+            {
+              type: "output_text",
+              text: "```json\n" + JSON.stringify(value) + "\n```",
+            },
+          ],
+        },
+      ],
+    };
+  assert.deepEqual(parseProviderResponse(data, "analyze", "responses"), value);
+});
+
+test("invalid embedded JSON becomes a friendly validation error", () => {
+  const content = 'intro {"a":1} outro {"b":2}',
+    data = { choices: [{ message: { content } }] };
+  assert.throws(
+    () => parseProviderResponse(data, "analyze", "chat"),
+    /dados inválidos/,
+  );
+});
